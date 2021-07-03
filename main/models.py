@@ -1,0 +1,464 @@
+import telebot
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.db import models
+
+from . import langs
+
+# Create your models here.
+
+NUM_RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
+
+ZERO_SEC = [0, 3, 12, 15, 26, 32, 35]
+ORPHELINS_SEC = [1, 6, 9, 14, 17, 20, 31, 34]
+TIERS_SEC = [5, 8, 10, 11, 13, 16, 23, 24, 27, 30, 33, 36]
+VOISINS_SEC = [2, 4, 7, 18, 19, 21, 22, 25, 28, 29]
+ANGLES_SECS = [
+    [0, 1, 2], [0, 2, 3],
+    [1, 2, 4, 5], [2, 3, 5, 6], [4, 5, 7, 8], [5, 6, 8, 9],
+    [7, 8, 10, 11], [8, 9, 11, 12],
+    [10, 11, 13, 14], [11, 12, 14, 15], [13, 14, 16, 17], [14, 15, 17, 18],
+    [16, 17, 19, 20], [17, 18, 20, 21], [19, 20, 22, 23], [20, 21, 23, 24],
+    [22, 23, 25, 26], [23, 24, 26, 27], [25, 26, 28, 29], [26, 27, 29, 30],
+    [28, 29, 31, 32], [29, 30, 32, 33], [31, 32, 34, 35], [32, 33, 35, 36]
+]
+
+class Baccarat(models.Model):
+    name = models.CharField(max_length=50)
+    bacc_id = models.CharField(max_length=30)
+    provider = models.CharField(max_length=30,default = "Evolution")
+    stats = models.JSONField(null=True, blank=True)
+    game_state = models.CharField(max_length= 120, blank=True)
+    sort_id = models.IntegerField()
+    def __str__(self):
+        return f"({self.sort_id})({self.provider}){self.name}"
+
+class Roulette(models.Model):
+    def __str__(self):
+        return f"({self.roul_id}){self.name}"
+    name = models.CharField(max_length=50)
+    roul_id = models.IntegerField()
+    new_stats = models.JSONField(null=True, blank=True)
+    def get_name(self):
+        if self.roul_id>29:
+            prod = "Ezugi"
+        else:
+            prod = "EG"
+        return f"{prod} {self.name}"
+
+
+class Number(models.Model):
+    roulette = models.ForeignKey(Roulette, on_delete=models.CASCADE)
+    num = models.IntegerField()
+    is_new = models.BooleanField(default=True)
+    def __str__(self):
+        return f"({self.roulette.roul_id}){self.num}"
+
+    def is_zero(self):
+        return self.num == 0
+
+    def is_red(self):
+        return self.num in NUM_RED
+
+    def get_sector(self):
+        number = self.num
+        if number in ZERO_SEC:
+            return "zero"
+        elif number in ORPHELINS_SEC:
+            return "orphelins"
+        elif number in TIERS_SEC:
+            return "tiers"
+        elif number in VOISINS_SEC:
+            return "voisins"
+
+    def is_even(self):
+        return self.num % 2 == 0
+
+    def get_sector_3(self):
+        return (self.num-1) // 3 + 1
+
+    def get_column(self):
+        return (self.num-1) % 3 + 1
+
+    def get_sectors_6(self):
+        sect_id = (self.num-1) // 3 + 1
+        return [sect_id-1, sect_id]
+
+    def get_dozen(self):
+        return (self.num-1) // 12 + 1
+
+    def is_big(self):
+        return self.num > 18
+
+    def get_angles(self):
+        number = self.num
+        angles = []
+        for i in range(len(ANGLES_SECS)):
+            if number in ANGLES_SECS[i]:
+                angles.append(i+1)
+        return angles
+
+
+
+
+class TlgBot(models.Model):
+    tg_token = models.CharField(max_length=60)
+    name = models.CharField(max_length=20)
+
+    def send_msg(self, user, msg):
+        bot = telebot.TeleBot(self.tg_token, threaded=False)
+        return bot.send_message(user.tlg_id, msg)
+
+    def edit_msg(self, user, msg, msg_id):
+        bot = telebot.TeleBot(self.tg_token, threaded=False)
+        try:
+            return bot.edit_message_text(msg, user.tlg_id, msg_id)
+        except Exception as e:
+            pass
+            # print(e)
+
+    def __str__(self):
+        return f"{self.name} bot"
+
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password, **extra_fields):
+        account = self.model(login=self.normalize_email(email), **extra_fields)
+        account.set_password(password)
+        account.usersetting = UserSetting()
+        account.save()
+        account.usersetting.save()
+        return account
+
+    def create_superuser(self, email, password, **extra_fields):
+        """
+        Create and save a SuperUser with the given email and password.
+        """
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError(_('Superuser must have is_staff=True.'))
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError(_('Superuser must have is_superuser=True.'))
+        return self.create_user(email, password, **extra_fields)
+
+
+class User(AbstractBaseUser):
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_pro = models.BooleanField(default=False)
+
+    login = models.EmailField(unique=True)
+    phone = models.CharField(max_length=20, null=True, blank=True)
+    usr_telegram = models.CharField(max_length=20, blank=True)
+    pro_time = models.DateTimeField()
+    tlg_id = models.CharField(max_length=20, blank=True)
+    tlg_bot = models.ForeignKey(TlgBot, null=True, blank=True, on_delete=models.SET_NULL)
+    online_time_sec = models.IntegerField(default=0)
+
+    USERNAME_FIELD = 'login'
+    EMAIL_FIELD = 'login'
+    REQUIRED_FIELDS = []
+    objects = CustomUserManager()
+
+    def has_perm(self, perm, obj=None):
+        "Does the user have a specific permission?"
+        # Simplest possible answer: Yes, always
+        return True
+
+    def has_module_perms(self, app_label):
+        "Does the user have permissions to view the app `app_label`?"
+        # Simplest possible answer: Yes, always
+        return True
+
+    def get_bot(self):
+        if not self.tlg_bot:
+            tg_bots = TlgBot.objects.all()
+            min_count = 10000000
+            min_bot = None
+            for tg_bot in tg_bots:
+                if tg_bot.user_set.count() < min_count:
+                    min_count = tg_bot.user_set.count()
+                    min_bot = tg_bot
+            self.tlg_bot = min_bot
+            self.save()
+        return self.tlg_bot
+
+
+
+class UserSetting(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    curr_roulettes = models.ManyToManyField(Roulette, null=True)
+    curr_baccarats = models.ManyToManyField(Baccarat, null=True, blank=True)
+    is_zero = models.JSONField(
+        default={
+            "fifty_fifty": 0,
+            "dozen_column": 0,
+            "alt_fifty_fifty": 0,
+            "alt_dozen_column": 0
+        }
+    )
+    show_nums_count = models.IntegerField(default=100)
+
+    def __str__(self):
+        return f"{self.user.login} settings"
+
+
+class Rule(models.Model):
+    name = models.CharField(max_length=50)
+    is_in_row = models.BooleanField()
+    rule_type = models.IntegerField()
+    how_many_in_row = models.IntegerField()
+    color = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_tg_on = models.BooleanField(default=False)
+
+    def get_text_info(self, lg="ru"):
+        lang = langs.en if lg == "en" else langs.ru
+        name = self.name
+
+        if self.is_in_row:
+            is_in_row = lang["func"]["menu"]["2"]  # выпало
+        else:
+            is_in_row = lang["func"]["menu"]["1"]  # не выпало
+
+        if (self.rule_type == 1):
+            rule_type = 'Red/Black'
+        elif (self.rule_type == 2):
+            rule_type = 'Even/Odd'
+        elif (self.rule_type == 3):
+            rule_type = 'Low/High'
+        elif (self.rule_type == 4):
+            rule_type = lang["func"]["menu"]["6"]  # дюжины
+        elif (self.rule_type == 5):
+            rule_type = lang["func"]["menu"]["7"]  # колонки
+        elif (self.rule_type == 6):
+            rule_type = lang["func"]["menu"]["8"]  # сектора по 3
+        elif (self.rule_type == 7):
+            rule_type = lang["func"]["menu"]["9"]  # Сектора по 6
+        elif (self.rule_type == 8):
+            rule_type = lang["func"]["menu"]["10"]  # Сектора рулетки
+        elif (self.rule_type == 9):
+            rule_type = lang["func"]["menu"]["11"]  # череда
+        elif (self.rule_type == 10):
+            rule_type = lang["func"]["menu"]["12"]  # число
+        elif (self.rule_type == 11):
+            rule_type = "Череда стритов по 3"
+
+        how_many_in_row = self.how_many_in_row
+
+        if (self.color == 1):
+            color = "green"  # зеленый
+        elif (self.color == 2):
+            color = "yellow"  # желтый
+        elif (self.color == 3):
+            color = "red"  # красный
+        return {
+            "name": name,
+            "is_in_row": is_in_row,
+            "rule_type": rule_type,
+            "how_many_in_row": how_many_in_row,
+            "color": color
+        }
+
+    def __str__(self):
+        return f"{self.user.login} rule {self.name}"
+
+class BaccRule(models.Model):
+    name = models.CharField(max_length=50)
+    rule_type = models.IntegerField()
+    count = models.IntegerField()
+    color = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_tg_on = models.BooleanField(default=False)
+
+    def get_text_info(self, lg="ru"):
+        lang = langs.en if lg == "en" else langs.ru
+        name = self.name
+
+        if (self.rule_type == 1):
+            rule_type = 'Банк'
+        elif (self.rule_type == 2):
+            rule_type = 'Игрок'
+        elif (self.rule_type == 3):
+            rule_type = 'Ничья'
+
+        count = self.count
+
+        if (self.color == 1):
+            color = "green"  # зеленый
+        elif (self.color == 2):
+            color = "yellow"  # желтый
+        elif (self.color == 3):
+            color = "red"  # красный
+        return {
+            "name": name,
+            "rule_type": rule_type,
+            "count": count,
+            "color": color
+        }
+    def __str__(self):
+        return f"{self.user.login} rule {self.name}"
+class TlgMsgBacc(models.Model):
+    is_sended = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rule = models.ForeignKey(BaccRule, on_delete=models.CASCADE)
+
+    bacc_name = models.CharField(max_length=40)
+    rule_name = models.CharField(max_length=20)
+    count = models.IntegerField()
+    is_stoped = models.BooleanField(default=False)
+    msg_id = models.IntegerField(default=-1)
+
+    def send_or_edit(self):
+        edit_msgs = TlgMsgBacc.objects.filter(
+            rule = self.rule,
+            user=self.user,
+            is_sended=True,
+            bacc_name=self.bacc_name,
+            rule_name=self.rule_name
+        )
+        if edit_msgs:
+            edit_msgs[0].up_msg(self.count)
+            self.delete()
+        else:
+            self.send_msg()
+    msg_id = models.IntegerField(default=-1)
+
+    def send_msg(self):
+        ordr_text = "не выпало подряд"
+        # while True:
+        try:
+            msg = self.user.get_bot().send_msg(
+                self.user,
+                f"На {self.bacc_name} {ordr_text} {self.rule_name} в количестве {self.count}"
+            )
+            # break
+            self.msg_id = msg.id
+            # print(msg.id)
+        except Exception as e:
+            # pass
+            print(e)
+        self.is_sended = True
+        self.save()
+        
+        
+
+    def stop_msg(self):
+        ordr_text = "не выпало подряд"
+        try:
+            self.user.get_bot().edit_msg(
+                self.user,
+                f"На {self.bacc_name} {ordr_text} {self.rule_name} в количестве {self.count} 🚫",
+                self.msg_id
+            )
+        except Exception as e:
+            print(e)
+        self.delete()
+
+    def up_msg(self, new_count):
+        ordr_text = "не выпало подряд"
+        if self.count < new_count:
+            self.user.get_bot().edit_msg(
+                self.user,
+                f"На {self.bacc_name} {ordr_text} {self.rule_name} в количестве {new_count} ⏫",
+                self.msg_id
+            )
+        self.count = new_count
+        self.save()
+
+    def __str__(self):
+        txt = "stop_msg" if self.is_stoped else "send_msg"
+        return f"{self.user.login} {txt}"
+
+
+class TlgMsg(models.Model):
+    is_sended = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rule = models.ForeignKey(Rule, on_delete=models.CASCADE)
+
+    roul_name = models.CharField(max_length=40)
+    is_in_order = models.BooleanField()
+    rule_name = models.CharField(max_length=20)
+    count = models.IntegerField()
+    is_stoped = models.BooleanField(default=False)
+
+    def send_or_edit(self):
+        edit_msgs = TlgMsg.objects.filter(
+            rule = self.rule,
+            user=self.user,
+            is_sended=True,
+            roul_name=self.roul_name,
+            is_in_order=self.is_in_order,
+            rule_name=self.rule_name
+        )
+        if edit_msgs:
+            edit_msgs[0].up_msg(self.count)
+            self.delete()
+        else:
+            self.send_msg()
+    msg_id = models.IntegerField(default=-1)
+
+    def send_msg(self):
+        ordr_text = "выпало подряд" if self.is_in_order else "не выпало подряд"
+        # while True:
+        try:
+            msg = self.user.get_bot().send_msg(
+                self.user,
+                f"На {self.roul_name} {ordr_text} {self.rule_name} в количестве {self.count}"
+            )
+            # break
+            self.msg_id = msg.id
+            # print(msg.id)
+        except Exception as e:
+            # pass
+            print(e)
+        self.is_sended = True
+        self.save()
+        
+        
+
+    def stop_msg(self):
+        ordr_text = "выпало подряд" if self.is_in_order else "не выпало подряд"
+        try:
+            self.user.get_bot().edit_msg(
+                self.user,
+                f"На {self.roul_name} {ordr_text} {self.rule_name} в количестве {self.count} 🚫",
+                self.msg_id
+            )
+        except Exception as e:
+            print(e)
+        self.delete()
+
+    def up_msg(self, new_count):
+        ordr_text = "выпало подряд" if self.is_in_order else "не выпало подряд"
+        if self.count < new_count:
+            self.user.get_bot().edit_msg(
+                self.user,
+                f"На {self.roul_name} {ordr_text} {self.rule_name} в количестве {new_count} ⏫",
+                self.msg_id
+            )
+        self.count = new_count
+        self.save()
+
+    def __str__(self):
+        txt = "stop_msg" if self.is_stoped else "send_msg"
+        return f"{self.user.login} {txt}"
+
+class ParseData(models.Model):
+    version = models.IntegerField()
+    evo_id = models.CharField(max_length=120)
+        
+
+class GlobalSetting(models.Model):
+    version = models.IntegerField()
+    free_rouls_available = models.IntegerField()
+    free_rules_available = models.IntegerField()
+    min_chances = models.IntegerField()
+    min_columns_and_dozens = models.IntegerField()
+    min_alts = models.IntegerField()
+    min_sectors = models.IntegerField()
+    min_sectors_3 = models.IntegerField()
+    min_sectors_6 = models.IntegerField()
+    min_numbers = models.IntegerField()

@@ -1,0 +1,567 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<div class="cont cont_111 cont_nowrap cont_hor page">
+        <!-- меню -->
+       
+        <div class="menu">
+            <div class="cont cont_hor cont_111 cont_nowrap">
+                <i id="menu_ico" class="fa fa-user-circle-o fa-2x  transition menu_ico" onclick="menu_on(1)"></i>
+                <div id="menu_user" class="max">{{user.login}}</div>
+            </div>
+            <i class="fa fa-cog fa-2x  transition menu_ico" id="menu_ico_2" onclick="menu_on(2)"></i>
+
+            <div class="menu_box" id="menu_box_1">
+                <div class="menu_block mb_20">
+                    <div class="cont cont_hor cont_111 cont_nowrap  menu_pro_1">
+                        <i class="fa fa-mobile menu_check_ico fs_20" aria-hidden="true"></i>
+                        <div class="max menu_check_line_p tal ml_10" id="menu_user_info_1">{{user.phone}}</div>
+                        <i class="fa fa-pencil menu_check_ico" onclick="menu_user_info(1, 1, '{{user.phone}}')"></i>
+                        <i class="fa fa-times menu_check_ico ml_10" aria-hidden="true" onclick="menu_user_info(2, 1)"></i>
+                    </div>
+                    <div class="cont cont_hor cont_111 cont_nowrap menu_pro_1">
+                        <i class="fa fa-telegram menu_check_ico" aria-hidden="true"></i>
+                        <div class="max menu_check_line_p tal ml_10" id="menu_user_info_2">{{user.telegram}}</div>
+                        <i class="fa fa-pencil menu_check_ico" onclick="menu_user_info(1, 2, '{{user.telegram}}')"></i>
+                        <i class="fa fa-times menu_check_ico ml_10" aria-hidden="true" onclick="menu_user_info(2, 2)"></i>
+                    </div>
+                    <div class="cont cont_hor cont_111 cont_nowrap menu_pro_1">
+                        <div class="cursor" onclick="language('ru')">RU</div>
+                        <div class=""> / </div>
+                        <div class="cursor" onclick="language('en')">EN</div>
+                    </div>
+                </div>
+                {% if user.is_pro %}
+                    <div class="menu_block mb_20">
+                        <div class="menu_pro_1">{{text.menu.pro.1}}:</div>
+                        <div class="menu_pro_1">{{user.pro_time}}</div>
+                        <a href="pro" class="menu_button_open color_white">{{text.menu.pro.2|upper}}</a>
+                    </div>
+                {% endif %}
+
+                {% if not user.is_pro %}           
+                    <a href="pro" class="menu_button_open mb_20 color_white">{{text.menu.pro.3|upper}}</a>
+                {% endif %}
+
+                {% if user.is_pro %}
+                    {% if not user.tlg_id %}
+                        <div class="menu_telega mb_20">
+                            <div class="menu_telega_title">{{text.menu.telega.3}}:</div>
+                            <input type="text"  id="menu_telega_input" value="" placeholder="{{text.menu.telega.4}}" class="menu_telega_input">
+                            <div class="menu_telega_button" onclick="menu_telega_save()">{{text.save|upper}}</div>
+                            <div class="menu_telega_title">{{text.menu.telega.5}} <a href="http://t.me/stat777spy_bot" class="menu_telega_link" target="_blank">@stat777spy_bot</a> {{text.menu.telega.6}}</div>
+                        </div>
+                    {% else %}
+                        <div class="menu_telega mb_20">
+                            <div class="menu_telega_title">Ваш бот <a href="http://t.me/{{user.tg_bot}}" class="menu_telega_link" target="_blank">@{{user.tg_bot}}</a> </div>
+                            <div class="menu_telega_title">Перейдите в него и нажмите start для активации</div>
+                        </div>       
+                    {% endif %}
+                {% endif %}
+
+                <div class="menu_button_save mb_20" onclick="menu_quit()">{{text.quit|upper}}</div>  
+                <a href="http://t.me/Lucky777wheel" class="menu_message mb_20" target="_blank">{{text.menu.dif.1}} @Lucky777wheel</a> 
+                <a href="mailto:partner@777spy.ru?subject=Парнертсво" class="menu_message mb_20" target="_blank">{{text.menu.dif.2}} partner@777spy.ru</a> 
+                <a href="https://t.me/stat777spy" class="menu_message mb_20" target="_blank">{{text.menu.dif.3}} @stat777spy</a>  
+                <a href="https://www.gamblingtherapy.org/ru" class="menu_message mb_20 mt_200" target="_blank">{{text.menu.dif.4}} 18+</a>              
+            </div>
+
+            <!-- Вторая вкладка -->
+            <div class="menu_box" id="menu_box_2"> 
+                <a href="https://777spy.ru/{{text.menu.dif.link}}/" class="menu_button_open color_white tdn fs_12 mb_20" target="_blank">{{text.menu.dif.5}}</a>
+                {% if not user.is_pro %}  
+                    <div class="menu_block mb_20">
+                        <div class="menu_pro_1">{{text.menu.set.1}} {{settings.free_roul_count}} {{text.menu.set.2}}.</div>
+                        <div class="menu_pro_1">{{text.menu.set.3}}.</div>
+                        <div class="menu_pro_1">{{text.menu.set.4}} {{settings.free_rule_count}} {{text.menu.set.5}}.</div>
+                        <div class="menu_pro_1">{{text.menu.set.6}}.</div>
+                        <a href="pro" class="menu_button_open color_white">{{text.menu.set.7|upper}}</a>
+                    </div>
+                {% endif %}
+
+                <div class="menu_block mb_20">
+                    <p class="menu_check_title" onclick="menu_block_on('menu_table')">{{text.menu.dif.6}}</p>            
+                    <div id="menu_table" class="display_none"></div>
+                </div>
+                <div class="menu_block mb_20">
+                    <p class="menu_check_title" onclick="menu_block_on('menu_check')">{{text.menu.dif.7}}</p>            
+                    <div id="menu_check" class="display_none"></div>
+                </div>
+                
+                <!-- Добавление правила -->
+                <div class="menu_button_open " onclick="menu_add()">{{text.menu.rule.1|upper}}</div>
+
+                <div class="menu_panel" id="menu_add_rules">
+                    <div id="menu_edit_id"></div>
+                    <input type="text" id="menu_add_name" value="" placeholder="{{text.menu.rule.2}}"  class="menu_panel_input menu_input mt_20">
+                    <select id="menu_add_tables" class="mt_20">
+                        <option value="0">{{text.func.menu.1}}</option>
+                        <option value="1">{{text.func.menu.2}}</option>
+                    </select>
+
+                    <select id="menu_add_col" class="mt_20">';
+                        <option value="1">Red/Black</option>
+                        <option value="2">Even/Odd</option>
+                        <option value="3">Low/High</option>
+                        <option value="4">{{text.func.menu.6}}</option>
+                        <option value="5">{{text.func.menu.7}}</option>
+                        <option value="6">{{text.func.menu.8}}</option>
+                        <option value="7">{{text.func.menu.9}}</option>
+                        <option value="8">{{text.func.menu.10}}</option>
+                        <option value="9">Череда кроме секторов по 3</option>
+                        <option value="11">Череда секторов по 3</option>
+                        <option value="10">{{text.func.menu.12}}</option>
+                    </select>
+
+                    <input type="text"  id="menu_add_count" value="" placeholder="{{text.menu.rule.3}}" class="menu_panel_input menu_input mt_20">
+
+                    <select id="menu_add_color" class="mt_20">';
+                        <option value="1">{{text.func.menu.13}}</option>
+                        <option value="2">{{text.func.menu.14}}</option>
+                        <option value="3">{{text.func.menu.15}}</option>
+                    </select>
+                    <div class="menu_button_save mt_20" onclick="menu_add_save()">{{text.save|upper}}</div>
+                </div>
+                <div class="menu_rules mt_20"></div>
+
+
+                <div class="menu_button_open" onclick="menu_setting_open()">{{text.cust|upper}}</div>
+                <div class="menu_panel" id="menu_panel_setting">
+                    <div class="menu_panel_p pt_20">{{text.menu.set.8}}:</div> 
+                    <input type="text" id="menu_setting_count" value="{{user.info}}" placeholder="{{text.menu.set.8}}"  class="menu_panel_input menu_input_2">
+                    <div class="menu_panel_p mt_20">{{text.menu.set.9}}:</div> 
+                    <input type="text" id="menu_setting_number_max" value="{{user.number_max}}" placeholder="{{text.menu.set.9}}"  class="menu_panel_input menu_input_2">
+                    <div class="menu_button_save mt_20" onclick="menu_setting_save()">{{text.save|upper}}</div>
+                </div>
+
+                <div class="menu_block mb_20 mt_20">
+                    <p class="menu_check_title" onclick="menu_block_on('menu_bacc')">Список Баккарат</p>            
+                    <div id="menu_bacc" class="display_none"></div>
+                </div>   
+
+                <!-- Добавление правила Баккара-->
+                <div class="menu_button_open " onclick="menu_add_bacc()">{{text.menu.rule.1|upper}} БАККАРА</div>
+
+                <div class="menu_panel" id="menu_add_rules_bacc">
+                    <div id="menu_edit_id_bacc"></div>
+                    <input type="text" id="menu_add_name_bacc" value="" placeholder="{{text.menu.rule.2}}"  class="menu_panel_input menu_input mt_20">
+                    <select id="menu_add_tables_bacc" class="mt_20">
+                        <option value="1">Не выпал банк</option>
+                        <option value="2">Не выпал игрок</option>
+                        <option value="3">Не выпала ничья</option>
+                    </select>
+
+                    <input type="text"  id="menu_add_count_bacc" value="" placeholder="{{text.menu.rule.3}}" class="menu_panel_input menu_input mt_20">
+
+                    <select id="menu_add_color_bacc" class="mt_20">';
+                        <option value="1">{{text.func.menu.13}}</option>
+                        <option value="2">{{text.func.menu.14}}</option>
+                        <option value="3">{{text.func.menu.15}}</option>
+                    </select>
+                    <div class="menu_button_save mt_20" onclick="menu_add_save_bacc()">{{text.save|upper}}</div>
+                </div>
+
+                <div class="menu_rules_bacc mt_20"></div>
+            </div>
+        </div>
+
+
+
+        <div class="max cont cont_100 cont_nowrap cont_vert cont_y_010">
+            <div class="width cont cont_100 cont_nowrap cont_vert cont_y_100">  
+                <div class="date_time bg_white">tst</div>
+                <!-- Таблица Эволюшн -->
+                <div id="date_time"></div>
+                <div class="table mt_20" id="table_on">
+                    <div class="table_header">{{text.index.table.1}}</div>
+                    <div class="table_radel">Evolution</div>
+                    <div class="cont cont_hor cont_100 cont_nowrap bor_top bg_3 col_title" style="order: 0;">
+                        <div class="col_1 ">{{text.index.table.2}}</div>
+                        <div class="col_2 ">{{text.index.table.3}}</div>
+                        <div class="col_2 col_br show_1" onclick="hide(1)">Red</div>
+                        <div class="col_2 show_1" onclick="hide(1)">Black</div>
+                        <div class="col_2 show_1" onclick="hide(1)">ALT</div>
+                        <div class="col_9 hide_1" onclick="show(1)"><i class="fa fa-chevron-right"></i></div>
+                        <div class="col_2 col_br show_2" onclick="hide(2)">Odd</div>
+                        <div class="col_2 show_2" onclick="hide(2)">Even</div>
+                        <div class="col_2 show_2" onclick="hide(2)">ALT</div>
+                        <div class="col_9 hide_2" onclick="show(2)"><i class="fa fa-chevron-right"></i></div>
+                        <div class="col_2 col_br show_3" onclick="hide(3)">Small</div>
+                        <div class="col_2 show_3" onclick="hide(3)">Big</div>
+                        <div class="col_2 show_3" onclick="hide(3)">ALT</div>
+                        <div class="col_9 hide_3" onclick="show(3)"><i class="fa fa-chevron-right"></i></div>
+                        <div class="col_2 col_br show_4" onclick="hide(4)">1st</div>
+                        <div class="col_2 show_4" onclick="hide(4)">2nd</div>
+                        <div class="col_2 show_4" onclick="hide(4)">3rd</div>
+                        <div class="col_2 show_4" onclick="hide(4)">ALT</div>
+                        <div class="col_9 hide_4" onclick="show(4)"><i class="fa fa-chevron-right"></i></div>
+                        <div class="col_2 col_br show_5" onclick="hide(5)">1col</div>
+                        <div class="col_2 show_5" onclick="hide(5)">2col</div>
+                        <div class="col_2 show_5" onclick="hide(5)">3col</div>
+                        <div class="col_2 show_5" onclick="hide(5)">ALT</div>
+                        <div class="col_9 hide_5" onclick="show(5)"><i class="fa fa-chevron-right"></i></div>
+                        <div class="col_2 col_br show_9" onclick="hide(9)">TIER</div>
+                        <div class="col_2 show_9" onclick="hide(9)">ORPH</div>
+                        <div class="col_2 show_9" onclick="hide(9)">VOIS</div>
+                        <div class="col_2 show_9" onclick="hide(9)">ZERO</div>
+                        <div class="col_2 show_9" onclick="hide(9)">ALT</div>
+                        <div class="col_9 hide_9" onclick="show(9)"><i class="fa fa-chevron-right"></i></div>
+                        <div class="col_2 col_br show_6" onclick="hide(6)">1-3</div>
+                        <div class="col_2 show_6" onclick="hide(6)">4-6</div>
+                        <div class="col_2 show_6" onclick="hide(6)">7-9</div>
+                        <div class="col_2 show_6" onclick="hide(6)">10-12</div>
+                        <div class="col_2 show_6" onclick="hide(6)">13-15</div>
+                        <div class="col_2 show_6" onclick="hide(6)">16-18</div>
+                        <div class="col_2 show_6" onclick="hide(6)">19-21</div>
+                        <div class="col_2 show_6" onclick="hide(6)">22-24</div>
+                        <div class="col_2 show_6" onclick="hide(6)">25-27</div>
+                        <div class="col_2 show_6" onclick="hide(6)">28-30</div>
+                        <div class="col_2 show_6" onclick="hide(6)">31-33</div>
+                        <div class="col_2 show_6" onclick="hide(6)">34-36</div>
+                        <div class="col_2 show_6" onclick="hide(6)">ALT</div>
+                        <div class="col_9 hide_6" onclick="show(6)"><i class="fa fa-chevron-right"></i></div>
+                        <div class="col_2 col_br show_7" onclick="hide(7)">1-6</div>
+                        <div class="col_2 show_7" onclick="hide(7)">4-9</div>
+                        <div class="col_2 show_7" onclick="hide(7)">7-12</div>
+                        <div class="col_2 show_7" onclick="hide(7)">10-15</div>
+                        <div class="col_2 show_7" onclick="hide(7)">13-18</div>
+                        <div class="col_2 show_7" onclick="hide(7)">16-21</div>
+                        <div class="col_2 show_7" onclick="hide(7)">19-24</div>
+                        <div class="col_2 show_7" onclick="hide(7)">22-27</div>
+                        <div class="col_2 show_7" onclick="hide(7)">25-30</div>
+                        <div class="col_2 show_7" onclick="hide(7)">28-33</div>
+                        <div class="col_2 show_7" onclick="hide(7)">31-36</div>
+                        <div class="col_9 hide_7" onclick="show(7)"><i class="fa fa-chevron-right"></i></div>    
+                    </div>
+                </div>
+
+                
+                {% for roul in roulettes %}
+                    <!-- Таблица Езуги -->
+                    {% if roul.id == 30 %}
+                        <div class="table" >
+                            <div class="table_radel">EZugi</div>
+                            <div class="cont cont_hor cont_100 cont_nowrap bor_top bg_3 col_title" style="order: 0;">
+                                <div class="col_1 ">{{text.index.table.2}}</div>
+                                <div class="col_2 ">{{text.index.table.3}}</div>
+                                <div class="col_2 col_br show_1" onclick="hide(1)">Red</div>
+                                <div class="col_2 show_1" onclick="hide(1)">Black</div>
+                                <div class="col_2 show_1" onclick="hide(1)">ALT</div>
+                                <div class="col_9 hide_1" onclick="show(1)"><i class="fa fa-chevron-right"></i></div>
+                                <div class="col_2 col_br show_2" onclick="hide(2)">Odd</div>
+                                <div class="col_2 show_2" onclick="hide(2)">Even</div>
+                                <div class="col_2 show_2" onclick="hide(2)">ALT</div>
+                                <div class="col_9 hide_2" onclick="show(2)"><i class="fa fa-chevron-right"></i></div>
+                                <div class="col_2 col_br show_3" onclick="hide(3)">Small</div>
+                                <div class="col_2 show_3" onclick="hide(3)">Big</div>
+                                <div class="col_2 show_3" onclick="hide(3)">ALT</div>
+                                <div class="col_9 hide_3" onclick="show(3)"><i class="fa fa-chevron-right"></i></div>
+                                <div class="col_2 col_br show_4" onclick="hide(4)">1st</div>
+                                <div class="col_2 show_4" onclick="hide(4)">2nd</div>
+                                <div class="col_2 show_4" onclick="hide(4)">3rd</div>
+                                <div class="col_2 show_4" onclick="hide(4)">ALT</div>
+                                <div class="col_9 hide_4" onclick="show(4)"><i class="fa fa-chevron-right"></i></div>
+                                <div class="col_2 col_br show_5" onclick="hide(5)">1col</div>
+                                <div class="col_2 show_5" onclick="hide(5)">2col</div>
+                                <div class="col_2 show_5" onclick="hide(5)">3col</div>
+                                <div class="col_2 show_5" onclick="hide(5)">ALT</div>
+                                <div class="col_9 hide_5" onclick="show(5)"><i class="fa fa-chevron-right"></i></div>
+                                <div class="col_2 col_br show_9" onclick="hide(9)">TIER</div>
+                                <div class="col_2 show_9" onclick="hide(9)">ORPH</div>
+                                <div class="col_2 show_9" onclick="hide(9)">VOIS</div>
+                                <div class="col_2 show_9" onclick="hide(9)">ZERO</div>
+                                <div class="col_2 show_9" onclick="hide(9)">ALT</div>
+                                <div class="col_9 hide_9" onclick="show(9)"><i class="fa fa-chevron-right"></i></div>
+                                <div class="col_2 col_br show_6" onclick="hide(6)">1-3</div>
+                                <div class="col_2 show_6" onclick="hide(6)">4-6</div>
+                                <div class="col_2 show_6" onclick="hide(6)">7-9</div>
+                                <div class="col_2 show_6" onclick="hide(6)">10-12</div>
+                                <div class="col_2 show_6" onclick="hide(6)">13-15</div>
+                                <div class="col_2 show_6" onclick="hide(6)">16-18</div>
+                                <div class="col_2 show_6" onclick="hide(6)">19-21</div>
+                                <div class="col_2 show_6" onclick="hide(6)">22-24</div>
+                                <div class="col_2 show_6" onclick="hide(6)">25-27</div>
+                                <div class="col_2 show_6" onclick="hide(6)">28-30</div>
+                                <div class="col_2 show_6" onclick="hide(6)">31-33</div>
+                                <div class="col_2 show_6" onclick="hide(6)">34-36</div>
+                                <div class="col_2 show_6" onclick="hide(6)">ALT</div>
+                                <div class="col_9 hide_6" onclick="show(6)"><i class="fa fa-chevron-right"></i></div>
+                                <div class="col_2 col_br show_7" onclick="hide(7)">1-6</div>
+                                <div class="col_2 show_7" onclick="hide(7)">4-9</div>
+                                <div class="col_2 show_7" onclick="hide(7)">7-12</div>
+                                <div class="col_2 show_7" onclick="hide(7)">10-15</div>
+                                <div class="col_2 show_7" onclick="hide(7)">13-18</div>
+                                <div class="col_2 show_7" onclick="hide(7)">16-21</div>
+                                <div class="col_2 show_7" onclick="hide(7)">19-24</div>
+                                <div class="col_2 show_7" onclick="hide(7)">22-27</div>
+                                <div class="col_2 show_7" onclick="hide(7)">25-30</div>
+                                <div class="col_2 show_7" onclick="hide(7)">28-33</div>
+                                <div class="col_2 show_7" onclick="hide(7)">31-36</div>
+                                <div class="col_9 hide_7" onclick="show(7)"><i class="fa fa-chevron-right"></i></div>    
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Строка верхней таблицы -->
+                    <div class="line_hide" style="display: none;">
+                        <div class="cont cont_hor cont_100 cont_nowrap color_no " id="line_1_{{roul.id}}">
+                            <div class="col_22 display_none roul_all" id="roul_{{roul.id}}"></div>
+                            <div class="col_1 cop_pos">{{roul.name}} </div>
+                            <div class="col_2" id="row_no_{{roul.id}}_count">{{roul.count}}</div>
+                            <div class="col_2 col_br show_1" id="row_no_{{roul.id}}_red"></div>
+                            <div class="col_2  show_1" id="row_no_{{roul.id}}_black"></div>
+                            <div class="col_2  show_1" id="row_no_{{roul.id}}_alt_1"></div>
+                            <div class="col_9 hide_1" onclick="show(1)"></div>
+                            <div class="col_2 col_br show_2" id="row_no_{{roul.id}}_odd"></div>
+                            <div class="col_2  show_2" id="row_no_{{roul.id}}_even"></div>
+                            <div class="col_2  show_2" id="row_no_{{roul.id}}_alt_2"></div>
+                            <div class="col_9 hide_2" onclick="show(2)"></div>
+                            <div class="col_2 col_br show_3" id="row_no_{{roul.id}}_small"></div>
+                            <div class="col_2  show_3" id="row_no_{{roul.id}}_big"></div>
+                            <div class="col_2  show_3" id="row_no_{{roul.id}}_alt_3"></div>
+                            <div class="col_9 hide_3" onclick="show(3)"></div>
+                            <div class="col_2 col_br show_4" id="row_no_{{roul.id}}_dz1"></div>
+                            <div class="col_2 show_4" id="row_no_{{roul.id}}_dz2"></div>
+                            <div class="col_2  show_4" id="row_no_{{roul.id}}_dz3"></div>
+                            <div class="col_2  show_4" id="row_no_{{roul.id}}_alt_4"></div>
+                            <div class="col_9 hide_4" onclick="show(4)"></div>
+                            <div class="col_2 col_br show_5" id="row_no_{{roul.id}}_col1"></div>
+                            <div class="col_2 show_5" id="row_no_{{roul.id}}_col2"></div>
+                            <div class="col_2  show_5" id="row_no_{{roul.id}}_col3"></div>
+                            <div class="col_2  show_5" id="row_no_{{roul.id}}_alt_5"></div>
+                            <div class="col_9 hide_5" onclick="show(5)"></div>
+                            <div class="col_2 col_br show_9" id="row_no_{{roul.id}}_ser_1"></div>
+                            <div class="col_2 show_9" id="row_no_{{roul.id}}_ser_2"></div>
+                            <div class="col_2 show_9" id="row_no_{{roul.id}}_ser_3"></div>
+                            <div class="col_2 show_9" id="row_no_{{roul.id}}_ser_4"></div>
+                            <div class="col_2 show_9" id="row_no_{{roul.id}}_alt_6"></div>
+                            <div class="col_9 hide_9" onclick="show(9)"></div>
+                            {% for i in range12 %}
+                                <div class="col_2 {% if i == 1 %} col_br {% else %} {% endif %} show_6" id="row_no_{{roul.id}}_q{{i}}"></div>
+                            {% endfor %}
+                            <div class="col_2 show_6" id="row_no_{{roul.id}}_alt_7"></div>
+                            <div class="col_9 hide_6" onclick="show(6)"></div>
+
+                            {% for i in range11 %}
+                                <div class="col_2 show_7 {% if i == 1 %} col_br {% else %} {% endif %} show_6" id="row_no_{{roul.id}}_w{{i}}"></div>
+                            {% endfor %}
+                            <div class="col_9 hide_7" onclick="show(7)"></div>
+                            <div class="col_44 max"></div>
+                        </div>
+                    </div>
+                
+
+                {% endfor %}
+        
+
+                <!-- Таблица нижняя Эволюшн -->
+                <div class="cont cont_hor cont_110 cont_nowrap" >
+                    <div class="table mt_20" >
+                        <div class="table_header">{{text.index.table.4}}</div>
+                        <div class="table_radel">Evolution</div>
+                        <div class="cont cont_hor cont_100 cont_nowrap bor_top bg_3 col_title">
+                            <div class="col_1 ">{{text.index.table.2}}</div>
+                            <div class="col_2 ">{{text.index.table.3}}</div>
+                            <div class="col_2 col_br show_1" onclick="hide(1)">Red</div>
+                            <div class="col_2 show_1" onclick="hide(1)">Black</div>
+                            <div class="col_9 hide_1" onclick="show(1)"><i class="fa fa-chevron-right"></i></div>
+                            <div class="col_2 col_br show_2" onclick="hide(2)">Odd</div>
+                            <div class="col_2 show_2" onclick="hide(2)">Even</div>
+                            <div class="col_9 hide_2" onclick="show(2)"><i class="fa fa-chevron-right"></i></div>
+                            <div class="col_2 col_br show_3" onclick="hide(3)">Small</div>
+                            <div class="col_2 show_3" onclick="hide(3)">Big</div>
+                            <div class="col_9 hide_3" onclick="show(3)"><i class="fa fa-chevron-right"></i></div>
+                            <div class="col_2 col_br show_4" onclick="hide(4)">1st</div>
+                            <div class="col_2 show_4" onclick="hide(4)">2nd</div>
+                            <div class="col_2 show_4" onclick="hide(4)">3rd</div>
+                            <div class="col_9 hide_4" onclick="show(4)"><i class="fa fa-chevron-right"></i></div>
+                            <div class="col_2 col_br show_5" onclick="hide(5)">1col</div>
+                            <div class="col_2 show_5" onclick="hide(5)">2col</div>
+                            <div class="col_2 show_5" onclick="hide(5)">3col</div>
+                            <div class="col_9 hide_5" onclick="show(5)"><i class="fa fa-chevron-right"></i></div>
+                        </div>
+                    </div>
+                    <div class="col_4"></div>
+                    <div class="table mt_20" >
+                        <div class="table_header table_header_8">{{text.index.table.1}}</div>                        
+                        <div class="table_radel table_header_8_1">Evolution</div>
+                        <div class="cont cont_nowrap cont_100 cont_hor  bor_top bg_3 col_title">
+							{% for i in range37 %}
+							    <div class="col_2 col_3  show_8 {% if i == 0 %} col_5 {% else %} {% endif %}" onclick="hide(8)">{{i}}</div>
+							{% endfor %}
+                            <div class="col_9 hide_8" onclick="show(8)"><i class="fa fa-chevron-right"></i></div>
+                        </div>
+                    </div>
+                </div>  
+
+
+                {% for roul in roulettes %}
+                    
+                    <!-- Таблица нижняя Езуги -->
+                    {% if roul.id == 30 %}
+                        <div class="cont cont_hor cont_110 cont_nowrap" >
+                            <div class="table" >
+                                <div class="table_radel ">EZugi</div>
+                                <div class="cont cont_hor cont_100 cont_nowrap bor_top bg_3 col_title">
+                                    <div class="col_1 ">{{text.index.table.2}}</div>
+                                    <div class="col_2 ">{{text.index.table.3}}</div>
+                                    <div class="col_2 col_br show_1" onclick="hide(1)">Red</div>
+                                    <div class="col_2 show_1" onclick="hide(1)">Black</div>
+                                    <div class="col_9 hide_1" onclick="show(1)"><i class="fa fa-chevron-right"></i></div>
+                                    <div class="col_2 col_br show_2" onclick="hide(2)">Odd</div>
+                                    <div class="col_2 show_2" onclick="hide(2)">Even</div>
+                                    <div class="col_9 hide_2" onclick="show(2)"><i class="fa fa-chevron-right"></i></div>
+                                    <div class="col_2 col_br show_3" onclick="hide(3)">Small</div>
+                                    <div class="col_2 show_3" onclick="hide(3)">Big</div>
+                                    <div class="col_9 hide_3" onclick="show(3)"><i class="fa fa-chevron-right"></i></div>
+                                    <div class="col_2 col_br show_4" onclick="hide(4)">1st</div>
+                                    <div class="col_2 show_4" onclick="hide(4)">2nd</div>
+                                    <div class="col_2 show_4" onclick="hide(4)">3rd</div>
+                                    <div class="col_9 hide_4" onclick="show(4)"><i class="fa fa-chevron-right"></i></div>
+                                    <div class="col_2 col_br show_5" onclick="hide(5)">1col</div>
+                                    <div class="col_2 show_5" onclick="hide(5)">2col</div>
+                                    <div class="col_2 show_5" onclick="hide(5)">3col</div>
+                                    <div class="col_9 hide_5" onclick="show(5)"><i class="fa fa-chevron-right"></i></div>
+                                </div>
+                            </div>
+                            <div class="col_4"></div>
+                            <div class="table" >                     
+                                <div class="table_radel table_header_8_2">EZugi</div>
+                                <div class="cont cont_nowrap cont_100 cont_hor  bor_top bg_3 col_title">
+                                    {% for i in range37 %}
+                                        <div class="col_2 col_3  show_8 {% if i == 0 %} col_5 {% else %} {% endif %}" onclick="hide(8)">{{i}}</div>
+                                    {% endfor %}
+
+                                    <div class="col_9 hide_8" onclick="show(8)"><i class="fa fa-chevron-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <!-- Строка нижней таблицы -->
+                    <div class="line_hide" style="display: none;">
+                        <div class="cont cont_hor cont_100 cont_nowrap">
+                            <div class="cont cont_hor cont_100 cont_nowrap color_yes" id="line_2_{{roul.id}}">
+                                <div class="col_1 cop_pos" onclick="info_open()">{{roul.name}}</div>
+                                <div class="col_2" id="row_yes_{{roul.id}}_count">{{roul.count}}</div>
+                                <div class="col_2 col_br show_1" id="row_yes_{{roul.id}}_red"></div>
+                                <div class="col_2  show_1" id="row_yes_{{roul.id}}_black"></div>
+                                <div class="col_9 hide_1" onclick="show(1)"></div>
+                                <div class="col_2 col_br show_2" id="row_yes_{{roul.id}}_odd"></div>
+                                <div class="col_2  show_2" id="row_yes_{{roul.id}}_even"></div>
+                                <div class="col_9 hide_2" onclick="show(2)"></div>
+                                <div class="col_2 col_br show_3" id="row_yes_{{roul.id}}_small"></div>
+                                <div class="col_2  show_3" id="row_yes_{{roul.id}}_big"></div>
+                                <div class="col_9 hide_3" onclick="show(3)"></div>
+                                <div class="col_2 col_br show_4" id="row_yes_{{roul.id}}_dz1"></div>
+                                <div class="col_2 show_4" id="row_yes_{{roul.id}}_dz2"></div>
+                                <div class="col_2  show_4" id="row_yes_{{roul.id}}_dz3"></div>
+                                <div class="col_9 hide_4" onclick="show(4)"></div>
+                                <div class="col_2 col_br show_5" id="row_yes_{{roul.id}}_col1"></div>
+                                <div class="col_2 show_5" id="row_yes_{{roul.id}}_col2"></div>
+                                <div class="col_2  show_5" id="row_yes_{{roul.id}}_col3"></div>
+                                <div class="col_9 hide_5" onclick="show(5)"></div>  
+                            </div>
+                            <div class="col_4"></div>
+                            <div class="cont cont_hor cont_100 cont_nowrap   color_dop" id="line_3_{{row.roulette_id}}">
+                                {% for i in range37 %}
+                                    <div class=" col_2 col_3  {% if i == 0 %} col_5 {% else %} {% endif %} show_8" id="row_no_{{roul.id}}_e{{i}}"></div>
+                                {% endfor %} 
+                                <div class="col_9 hide_8" onclick="show(8)"></div>
+                            
+                            </div><div class="col_44 max"></div>
+                        
+                        </div>
+                    </div>
+                {% endfor %}
+                 
+
+                <div class="bacc cont cont_hor">
+                    <!-- Таблица Баккар Evolution-->
+                    
+                    <div class="cont_wrap cont_hor">
+                        <div class="cont cont_hor cont_110 cont_nowrap" >
+                            <div class="table mt_20" >
+                                <div class="table_header">Баккара</div>
+                                <div class="table_header">{{text.index.table.1}}</div>
+                                <div class="table_radel">Evolution</div>
+                                <div class="cont cont_hor cont_100 cont_nowrap bor_top bg_3 col_title">
+                                    <div class="col_11 ">{{text.index.table.2}}</div>
+                                    <div class="col_2 col_br show_1" >кол</div>
+                                    <div class="col_2 show_1" >кол P</div>
+                                    <div class="col_2 show_1" >кол B</div>
+                                    <div class="col_2 show_1" >кол T</div>
+                                    <div class="col_2 col_br show_1" >Play</div>
+                                    <div class="col_2 show_1" >Bank</div>
+                                    <div class="col_2 show_1" >Tie</div>
+                                </div>
+                            </div>
+                        </div> 
+
+                        {% for bacc in baccarats.EG %}
+
+                            <!-- Строка таблицы баккар Evolution-->
+                            <div style="display: none;">
+                                <div class="cont cont_hor cont_100 cont_nowrap">
+                                    <div class="cont cont_hor cont_100 cont_nowrap color_yes line_hide" id="bacc_{{bacc.id}}" >
+                                        <div class="col_11 cop_pos" onclick="info_open()">{{bacc.name}}</div>
+                                        <div class="col_2 col_br show_1" id="bacc_col_{{bacc.id}}_total"></div>
+                                        <div class="col_2  show_1" id="bacc_col_{{bacc.id}}_play"></div>
+                                        <div class="col_2  show_1" id="bacc_col_{{bacc.id}}_bank"></div>
+                                        <div class="col_2  show_1" id="bacc_col_{{bacc.id}}_tie"></div>
+                                        <div class="col_2 col_br show_1" id="bacc_no_{{bacc.id}}_play"></div>
+                                        <div class="col_2  show_1" id="bacc_no_{{bacc.id}}_bank"></div>
+                                        <div class="col_2  show_1" id="bacc_no_{{bacc.id}}_tie"></div>
+                                    </div>
+                                
+                                </div>
+                            </div>
+                        {% endfor %}    
+                    </div>
+                    <div class="col_4"></div>
+                    <div class="cont_wrap cont_hor">
+                        <!-- Таблица Баккар Ezugi-->
+                        <div class="cont cont_hor cont_110 cont_nowrap" >
+                            <div class="table mt_20" >
+                                <div class="table_header">Баккара</div>
+                                <div class="table_header">{{text.index.table.1}}</div>
+                                <div class="table_radel">Ezugi</div>
+                                <div class="cont cont_hor cont_100 cont_nowrap bor_top bg_3 col_title">
+                                    <div class="col_11 ">{{text.index.table.2}}</div>
+                                    <div class="col_2 col_br show_1" >кол</div>
+                                    <div class="col_2 show_1" >кол P</div>
+                                    <div class="col_2 show_1" >кол B</div>
+                                    <div class="col_2 show_1" >кол T</div>
+                                    <div class="col_2 col_br show_1" >Play</div>
+                                    <div class="col_2 show_1" >Bank</div>
+                                    <div class="col_2 show_1" >Tie</div>
+                                </div>
+                            </div>
+                        </div> 
+
+                        {% for bacc in baccarats.Ezugi %}
+
+                            <!-- Строка таблицы баккар Ezugi-->
+                            <div style="display: none;">
+                                <div class="cont cont_hor cont_100 cont_nowrap">
+                                    <div class="cont cont_hor cont_100 cont_nowrap color_yes line_hide" id="bacc_{{bacc.id}}" >
+                                        <div class="col_11 cop_pos" onclick="info_open()">{{bacc.name}}</div>
+                                        <div class="col_2 col_br show_1" id="bacc_col_{{bacc.id}}_total"></div>
+                                        <div class="col_2  show_1" id="bacc_col_{{bacc.id}}_play"></div>
+                                        <div class="col_2  show_1" id="bacc_col_{{bacc.id}}_bank"></div>
+                                        <div class="col_2  show_1" id="bacc_col_{{bacc.id}}_tie"></div>
+                                        <div class="col_2 col_br show_1" id="bacc_no_{{bacc.id}}_play"></div>
+                                        <div class="col_2  show_1" id="bacc_no_{{bacc.id}}_bank"></div>
+                                        <div class="col_2  show_1" id="bacc_no_{{bacc.id}}_tie"></div>
+                                    </div>
+                                
+                                </div>
+                            </div>
+                        {% endfor %} 
+                    </div>
+                </div>
+                <div id="number" class=" ml_20 mr_20 border_box"></div>            
+            <div class="height_100"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

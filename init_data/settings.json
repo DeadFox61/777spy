@@ -1,0 +1,1 @@
+[{"model": "main.globalsetting", "pk": 1, "fields": {"version": 1000, "free_rouls_available": 1, "free_rules_available": 3, "min_chances": 5, "min_columns_and_dozens": 5, "min_alts": 7, "min_sectors": 5, "min_sectors_3": 50, "min_sectors_6": 20, "min_numbers": 100}}]

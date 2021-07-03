@@ -1,0 +1,25 @@
+[
+	{"model": "main.user", "pk": 3, "fields": 
+	{"password": "pbkdf2_sha256$260000$BIa5k4438Y1eN20JSKkyuq$Gkefma/PDAHaXQyurD92bftq29pO/8FY61CY15lg9dY=", "last_login": "2021-05-12T21:19:47.009Z", "is_staff": true, "is_active": true, "is_pro": true, "login": "maximoous4@gmail.com", "phone": "9054770875", "usr_telegram": "mr_max", "pro_time": "2021-03-05T09:57:45Z", "tlg_id": "429111949", "tlg_bot": null, "online_time_sec": 55390}}, 
+{"model": "main.user", "pk": 4, "fields": 
+	{"password": "pbkdf2_sha256$260000$VETHpp1dKTx6QVA8x2Mgus$pB0oE9Ks7IOM+wNJjD/1UDo8K7MQEtRk3RgpS+uHLhI=", "last_login": "2021-05-08T13:30:57.736Z", "is_staff": true, "is_active": true, "is_pro": true, "login": "admin@admin.admin", "phone": null, "usr_telegram": "", "pro_time": "2021-03-05T09:39:50Z", "tlg_id": "1033286353", "tlg_bot": null, "online_time_sec": 14515}}, 
+{"model": "main.user", "pk": 16, "fields": 
+	{"password": "pbkdf2_sha256$216000$G4GBhgANlNz5$Qa7MtPMNeaf1wkiOBrmI989NwBsdntIIje/zhzeHf28=", "last_login": "2021-04-08T04:38:18.430Z", "is_staff": true, "is_active": true, "is_pro": false, "login": "s7ceeyrgz3datnzk@protonmail.com", "phone": "", "usr_telegram": "", "pro_time": "2021-04-04T14:58:06Z", "tlg_id": "", "tlg_bot": null, "online_time_sec": 0}}, 
+{"model": "main.user", "pk": 17, "fields": 
+	{"password": "pbkdf2_sha256$260000$n53zohSOpB6tj1vATzSRBQ$lEuyIjCDyvd5uReX51c5GmrHXI9n1bqyFg3wpV7y5oY=", "last_login": "2021-05-18T03:25:47.432Z", "is_staff": false, "is_active": true, "is_pro": true, "login": "torgaev85@mail.ru", "phone": "+79131798790", "usr_telegram": "591599125", "pro_time": "2021-04-08T14:35:44Z", "tlg_id": "591599125", "tlg_bot": null, "online_time_sec": 23858}}, 
+{"model": "main.user", "pk": 18, "fields": 
+	{"password": "pbkdf2_sha256$216000$GOKRQs4GT484$451tkWp8AzI/zheYlk8wkL947kY0t9GvQIrsfy9ZeT0=", "last_login": "2021-04-11T08:20:37.513Z", "is_staff": false, "is_active": true, "is_pro": false, "login": "test@test.test", "phone": "", "usr_telegram": "", "pro_time": "2021-04-11T08:20:34.126Z", "tlg_id": "", "tlg_bot": null, "online_time_sec": 0}}, 
+{"model": "main.user", "pk": 19, "fields": 
+	{"password": "pbkdf2_sha256$260000$Am1KyzEge2QNmpNq2MD73l$JEyxKOSudkWHMr0an8jyrBTOIWw2mspVyj1gC15SIHo=", "last_login": "2021-05-12T06:52:58.669Z", "is_staff": false, "is_active": true, "is_pro": true, "login": "atoev@yandex.ru", "phone": "+79381514941", "usr_telegram": "sslavs", "pro_time": "2021-04-11T11:37:20Z", "tlg_id": "554336154", "tlg_bot": null, "online_time_sec": 23766}}, 
+{"model": "main.user", "pk": 21, "fields": 
+	{"password": "pbkdf2_sha256$260000$kMoCkqLIqinquUXEMn0PBh$XJ0dheSO5kkge73xBJbcu/lw4TXZ7JcAmu1LT/bIyrI=", "last_login": "2021-04-30T15:43:05.056Z", "is_staff": false, "is_active": true, "is_pro": true, "login": "sixy@bk.ru", "phone": "+37496476699", "usr_telegram": "Gevorgg777", "pro_time": "2021-04-23T13:30:27Z", "tlg_id": "396071851", "tlg_bot": null, "online_time_sec": 80628}}, 
+{"model": "main.user", "pk": 22, "fields": 
+	{"password": "pbkdf2_sha256$260000$cXlEN5Pfcb8NJ5os5kRbum$M/1+klSo4Jjr5C4WM0AObV8lvnw7qKBPzvzwOaf2Dgk=", "last_login": "2021-05-10T20:55:36.896Z", "is_staff": false, "is_active": true, "is_pro": true, "login": "bsk512@yandex.ru", "phone": "+79110140555", "usr_telegram": "", "pro_time": "2021-04-24T03:05:41Z", "tlg_id": "802029398", "tlg_bot": null, "online_time_sec": 29740}}, 
+{"model": "main.user", "pk": 24, "fields": 
+	{"password": "pbkdf2_sha256$260000$A51ykDDWbbjX6GxgMGhz0H$cPQ9FZBlrawUvB/C0XkHYhLd+iwTyeb02ZReeRCnaVw=", "last_login": "2021-04-29T13:06:54.239Z", "is_staff": false, "is_active": true, "is_pro": true, "login": "denilsandr87@yandex.ru", "phone": "89062080287", "usr_telegram": "2147483647", "pro_time": "2021-04-29T13:05:46Z", "tlg_id": "1253197488", "tlg_bot": null, "online_time_sec": 1133}}, 
+{"model": "main.user", "pk": 25, "fields": 
+	{"password": "pbkdf2_sha256$260000$PG0iazPe0C6GfHloayeh24$YwFN06WLkhL1scknhdjThbpSyNQBGdn6phCFnrVHi9w=", "last_login": "2021-05-06T18:56:21.331Z", "is_staff": false, "is_active": false, "is_pro": false, "login": "takuev777@mail.ru", "phone": "89360011162", "usr_telegram": "89360011162", "pro_time": "2021-05-05T08:16:13Z", "tlg_id": "1020366448", "tlg_bot": null, "online_time_sec": 135173}}, 
+{"model": "main.user", "pk": 26, "fields": 
+	{"password": "pbkdf2_sha256$260000$3uMeKVNqC0M3dkfXd3fp8g$Di4v3QMWKAplVU+FdBd8NZkOeSaGZBU+Xy9LgYqpJBA=", "last_login": "2021-05-14T15:08:27.797Z", "is_staff": false, "is_active": true, "is_pro": true, "login": "d.marin2020@rambler.ru", "phone": "89021285373", "usr_telegram": "", "pro_time": "2021-05-13T07:10:10Z", "tlg_id": "320532035", "tlg_bot": null, "online_time_sec": 25489}}, 
+{"model": "main.user", "pk": 27, "fields": 
+	{"password": "pbkdf2_sha256$260000$MAEY8fh9kOhCX3lpKmpjrP$TTQYhCt8eEasSrerDR9FDOCz4wJNtInmIdqeW0txo94=", "last_login": "2021-05-18T07:40:49.046Z", "is_staff": false, "is_active": true, "is_pro": true, "login": "yurii_92@list.ru", "phone": "+79241376422", "usr_telegram": "@yurrrka", "pro_time": "2021-05-18T07:40:48Z", "tlg_id": "490151994", "tlg_bot": null, "online_time_sec": 4314}}]

@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>777</title>
+<script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
+<link rel="stylesheet" href="{% static 'file/fonts/font-awesome.css' %}">
+<link rel="stylesheet" href="{% static 'style_14.css' %}">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="{% static 'script_14.js' %}" ></script>
+<meta name="keywords" content="Статистика Live Casino">
+<meta name="description" content="Статистика Live Casino">
+<meta name="author" lang="ru" content="innovea.ru">
+</head>
+<body> 
+<div class="page">
+	{% block content %}{% endblock %}
+</div>
+</body>
+</html>

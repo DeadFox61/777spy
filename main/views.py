@@ -1,0 +1,412 @@
+import re
+
+from django.contrib.auth import authenticate
+from django.contrib.auth import login
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import render
+
+from django.views import generic
+from django.views.decorators.gzip import gzip_page
+
+from . import langs
+from .models import Roulette, Rule, User, UserSetting, TlgMsg, TlgMsgBacc, GlobalSetting, Baccarat, BaccRule
+from . import site_auth, roulette_api, baccarat_api
+
+def index(request):
+    if request.user.is_authenticated:
+        roulettes = Roulette.objects.all().order_by("roul_id")
+        baccarats = Baccarat.objects.all().order_by("sort_id")
+        usr = request.user
+        tg_bot = ''
+        if usr.tlg_id and usr.is_pro:
+            tg_bot = usr.get_bot().name
+        context = {
+            'user': {
+                'login': usr.login,
+                'phone': usr.phone,
+                'telegram': usr.usr_telegram,
+                'tlg_id': usr.tlg_id,
+                'tg_bot': tg_bot,
+                'is_pro': usr.is_pro,
+                'pro_time': usr.pro_time
+            },
+            'roulettes': [
+                {
+                    'is_evol': roul.roul_id < 30,
+                    'name': roul.name,
+                    'id': roul.roul_id,
+                    "count": roul.number_set.count()
+                }
+                for roul in roulettes
+            ],
+            'baccarats': {
+                "EG":[
+                    {
+                        'provider': bacc.provider,
+                        'name': bacc.name,
+                        'id': bacc.bacc_id
+                    }
+                    for bacc in baccarats if bacc.provider == "Evolution"
+                ],
+                "Ezugi":[
+                    {
+                        'provider': bacc.provider,
+                        'name': bacc.name,
+                        'id': bacc.bacc_id
+                    }
+                    for bacc in baccarats if bacc.provider == "Ezugi"
+                ]
+            },
+            'settings': {
+                'free_roul_count': 1,
+                'free_rule_count': 3
+            },
+            'text': langs.ru,
+            'range37': range(37),
+            'range11': range(1, 12),
+            'range12': range(1, 13)
+        }
+        return render(request, 'index.html', context)
+    else:
+        context = {'text': langs.ru}
+        return render(request, 'login.html', context)
+
+def pro(request):
+    return render(request, 'pro.html', {})
+
+
+# ajax-ы
+
+def ajax(request):
+    if request.POST['type'] == 'text':
+        return JsonResponse(langs.ru)
+
+    elif request.POST['type'] == 'signin':
+        user_login = request.POST['login'].lower()
+        password = request.POST['password']
+        if not re.match(r"^[a-z0-9\._-]+@[a-z0-9-]+\.[a-z]{2,6}$", user_login):
+            return HttpResponse("0_mail")
+        if not re.match(r"^([0-9]|[a-z]|[A-Z]){6,}$", password):
+            return HttpResponse("0_pass_1")
+        if request.POST['button'] == "1":
+            user = authenticate(request, login=user_login, password=password)
+            if user is not None:
+                # A backend authenticated the credentials
+                login(request, user)
+                return HttpResponse("1_ok")
+            else:
+                # No backend authenticated the credentials
+                return HttpResponse("1_no")
+        elif request.POST['button'] == "2":
+            password2 = request.POST['password2']
+            if password != password2:
+                return HttpResponse("2_pass")
+            if User.objects.filter(login=user_login).exists():
+                return HttpResponse("2_login")
+            signin_phone = request.POST['signin_phone']
+            if signin_phone and not re.match(r"^([0-9]|\+){7,20}$", signin_phone):
+                return HttpResponse("2_phone")
+            signin_telegram = request.POST['signin_telegram']
+            if signin_telegram and not re.match(r"^@?([0-9]|[a-z]|[A-Z]){3,}$", signin_telegram):
+                return HttpResponse("2_telegram")
+            site_auth.sign_up(
+                user_login,
+                password,
+                phone=signin_phone,
+                usr_telegram=signin_telegram
+            )
+            user = authenticate(request, login=user_login, password=password)
+            login(request, user)
+            return HttpResponse("2_ok")
+    return HttpResponse("aga")
+
+def get_stats_bacc(request):
+    if request.user.is_anonymous:
+        return HttpResponse("anon")
+    return JsonResponse(baccarat_api.get_stats(request.user))
+    
+
+@gzip_page
+def get_stats(request):
+    if request.user.is_anonymous:
+        return HttpResponse("anon")
+    else:
+        return JsonResponse(roulette_api.get_stats(request.user))
+    
+
+
+def get_choice_roul(request):
+    usr = request.user
+    data = {"user": {"is_pro": usr.is_pro}, "roulettes": []}
+    selected_rouls = list(usr.usersetting.curr_roulettes.all())
+    roulettes = Roulette.objects.all().order_by("roul_id")
+    for roulette in roulettes:
+        data["roulettes"].append(
+            {
+                "roul_id": roulette.roul_id,
+                "name": roulette.name,
+                "is_selected": roulette in selected_rouls
+            }
+        )
+    return JsonResponse(data)
+
+def get_choice_bacc(request):
+    usr = request.user
+    data = {"user": {"is_pro": usr.is_pro}, "baccarats": {"Evolution":[],"Ezugi":[]}}
+    selected_baccs = list(usr.usersetting.curr_baccarats.all())
+    baccarats = Baccarat.objects.all().order_by("sort_id")
+    for baccarat in baccarats:
+        data["baccarats"][baccarat.provider].append(
+            {
+                "bacc_id": baccarat.bacc_id,
+                "name": baccarat.name,
+                "is_selected": baccarat in selected_baccs
+            }
+        )
+    return JsonResponse(data)
+
+
+def change_bacc(request):
+    change_bacc_id = request.POST['param']
+    usr = request.user
+    gl_st = GlobalSetting.objects.get(version = 1000)
+    bacc = Baccarat.objects.get(bacc_id=change_bacc_id)
+    if bacc in usr.usersetting.curr_baccarats.all():
+        usr.usersetting.curr_baccarats.remove(bacc)
+    else:
+        if not usr.is_pro and usr.usersetting.curr_baccarats.count() >= gl_st.free_rouls_available:
+            data = {"status":"err","min_val":gl_st.free_rouls_available}
+            return JsonResponse(data)
+        usr.usersetting.curr_baccarats.add(bacc)
+    data = {"status":"ok"}
+    return JsonResponse(data)
+
+def change_roul(request):
+    change_roul_id = request.POST['param']
+    usr = request.user
+    gl_st = GlobalSetting.objects.get(version = 1000)
+    roul = Roulette.objects.get(roul_id=change_roul_id)
+    if roul in usr.usersetting.curr_roulettes.all():
+        usr.usersetting.curr_roulettes.remove(roul)
+    else:
+        if not usr.is_pro and usr.usersetting.curr_roulettes.count() >= gl_st.free_rouls_available:
+            data = {"status":"err","min_val":gl_st.free_rouls_available}
+            return JsonResponse(data)
+        usr.usersetting.curr_roulettes.add(roul)
+    data = {"status":"ok"}
+    return JsonResponse(data)
+
+
+def get_zeros(request):
+    usr = request.user
+    data = usr.usersetting.is_zero
+    return JsonResponse(data)
+
+
+def change_zero(request):
+    usr = request.user
+    zr_name = request.POST['name']
+    is_zero = usr.usersetting.is_zero
+    if is_zero[zr_name]:
+        is_zero[zr_name] = 0
+    else:
+        is_zero[zr_name] = 1
+    usr.usersetting.is_zero = is_zero
+    usr.usersetting.save()
+    return JsonResponse({"status": "ok"})
+
+def add_rule_bacc(request):
+    usr = request.user
+    name = request.POST['name']
+    gl_st = GlobalSetting.objects.get(version = 1000)
+    rule_type = int(request.POST['tables'])
+    count = int(request.POST['count'])
+    color = int(request.POST['color'])
+    if not usr.is_pro and usr.rule_set.count() >= gl_st.free_rules_available:
+        return JsonResponse({"status": "err","min_val":gl_st.free_rules_available})
+    rule = BaccRule(
+        name=name,
+        rule_type=rule_type,
+        count=count,
+        color=color,
+        user=usr
+    )
+    rule.save()
+    return JsonResponse({"status": "ok"})
+
+
+def add_rule(request):
+    usr = request.user
+    name = request.POST['name']
+    gl_st = GlobalSetting.objects.get(version = 1000)
+    is_in_row = bool(int(request.POST['tables']))
+    rule_type = int(request.POST['col'])
+    how_many_in_row = int(request.POST['count'])
+    color = int(request.POST['color'])
+    if not usr.is_pro and usr.rule_set.count() >= gl_st.free_rules_available:
+        return JsonResponse({"status": "err","min_val":gl_st.free_rules_available})
+    rule = Rule(
+        name=name,
+        is_in_row=is_in_row,
+        rule_type=rule_type,
+        how_many_in_row=how_many_in_row,
+        color=color,
+        user=usr
+    )
+    rule.save()
+    return JsonResponse({"status": "ok"})
+
+def get_rules_bacc(request):
+    usr = request.user
+    rules = BaccRule.objects.filter(user=usr)
+    data_rules = []
+    for rule in rules:
+        rule_text = rule.get_text_info()
+        data_rules.append(
+            {
+                "id": rule.id,
+                "name": rule_text["name"],
+                "rule_type": rule_text["rule_type"],
+                "count": rule_text["count"],
+                "color": rule_text["color"],
+                "is_tg_on": rule.is_tg_on
+            }
+        )
+    return JsonResponse({"rules": data_rules})
+
+def get_rules(request):
+    usr = request.user
+    rules = Rule.objects.filter(user=usr)
+    data_rules = []
+    for rule in rules:
+        rule_text = rule.get_text_info()
+        data_rules.append(
+            {
+                "id": rule.id,
+                "name": rule_text["name"],
+                "is_in_row": rule_text["is_in_row"],
+                "rule_type": rule_text["rule_type"],
+                "how_many_in_row": rule_text["how_many_in_row"],
+                "color": rule_text["color"],
+                "is_tg_on": rule.is_tg_on
+            }
+        )
+    return JsonResponse({"rules": data_rules})
+
+def del_rule_bacc(request):
+    rule_id = int(request.POST['id'])
+    BaccRule.objects.get(id=rule_id).delete()
+    return JsonResponse({"status": "ok"})
+
+def del_rule(request):
+    rule_id = int(request.POST['id'])
+    Rule.objects.get(id=rule_id).delete()
+    return JsonResponse({"status": "ok"})
+
+def get_clean_rule_bacc(request):
+    rule_id = int(request.POST['id'])
+    rule = BaccRule.objects.get(id=rule_id)
+    return JsonResponse(
+        {
+            "id": rule.id,
+            "name": rule.name,
+            "rule_type": rule.rule_type,
+            "count": rule.count,
+            "color": rule.color
+        }
+    )
+
+def get_clean_rule(request):
+    rule_id = int(request.POST['id'])
+    rule = Rule.objects.get(id=rule_id)
+    return JsonResponse(
+        {
+            "id": rule.id,
+            "name": rule.name,
+            "is_in_row": rule.is_in_row,
+            "rule_type": rule.rule_type,
+            "how_many_in_row": rule.how_many_in_row,
+            "color": rule.color
+        }
+    )
+
+def change_tg_bacc(request):
+    usr = request.user
+    rule_id = int(request.POST['id'])
+    is_on = bool(int(request.POST['param']))
+    rule = BaccRule.objects.get(id=rule_id)
+    rule_type = rule.rule_type
+    count = rule.count
+    gl_st = GlobalSetting.objects.get(version = 1000)
+    if not usr.is_pro:
+        rule.is_tg_on = False
+        TlgMsgBacc.objects.filter(rule=rule).delete()
+        rule.save()
+        return JsonResponse({"status": "err_pro"})
+    else:
+        if is_on:
+            rule.is_tg_on = True
+        else:
+            rule.is_tg_on = False
+            TlgMsgBacc.objects.filter(rule=rule).delete()
+        rule.save()
+        return JsonResponse({"status": "ok"})
+
+def change_tg(request):
+    usr = request.user
+    rule_id = int(request.POST['id'])
+    is_on = bool(int(request.POST['param']))
+    rule = Rule.objects.get(id=rule_id)
+    rule_type = rule.rule_type
+    how_many_in_row = rule.how_many_in_row
+    gl_st = GlobalSetting.objects.get(version = 1000)
+    if not usr.is_pro:
+        rule.is_tg_on = False
+        TlgMsg.objects.filter(rule=rule).delete()
+        rule.save()
+        return JsonResponse({"status": "err_pro"})
+    else:
+        if is_on:
+            if rule_type == 1 or rule_type == 2 or rule_type == 3:
+                if how_many_in_row < gl_st.min_chances:
+                    return JsonResponse({"status": "err","min_val":gl_st.min_chances})
+            elif rule_type == 4 or rule_type == 5:
+                if how_many_in_row < gl_st.min_columns_and_dozens:
+                    return JsonResponse({"status": "err","min_val":gl_st.min_columns_and_dozens})
+            elif rule_type == 6:
+                if how_many_in_row < gl_st.min_sectors_3:
+                    return JsonResponse({"status": "err","min_val":gl_st.min_sectors_3})
+            elif rule_type == 7:
+                if how_many_in_row < gl_st.min_sectors_6:
+                    return JsonResponse({"status": "err","min_val":gl_st.min_sectors_6})
+            elif rule_type == 8:
+                if how_many_in_row < gl_st.min_sectors:
+                    return JsonResponse({"status": "err","min_val":gl_st.min_sectors})
+            elif rule_type == 9:
+                if how_many_in_row < gl_st.min_alts:
+                    return JsonResponse({"status": "err","min_val":gl_st.min_alts})
+            elif rule_type == 10:
+                if how_many_in_row < gl_st.min_numbers:
+                    return JsonResponse({"status": "err","min_val":gl_st.min_numbers})
+            elif rule_type == 11:
+                if how_many_in_row < 30:
+                    return JsonResponse({"status": "err","min_val":30})
+            rule.is_tg_on = True
+        else:
+            rule.is_tg_on = False
+            TlgMsg.objects.filter(rule=rule).delete()
+        rule.save()
+        return JsonResponse({"status": "ok"})
+
+def save_tg_id(request):
+    tlg_id = request.POST['param']
+    usr = request.user
+    usr.tlg_id = tlg_id
+    usr.save()
+    return HttpResponse("yes")
+
+def add_sec(request):
+    usr = request.user
+    usr.online_time_sec+=1
+    usr.save()
+    return HttpResponse("ok")

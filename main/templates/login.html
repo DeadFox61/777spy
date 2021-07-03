@@ -1,0 +1,29 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+{% load static %}
+<img src="{% static 'file/logo.png' %}" alt="" class="logo logo_signin">
+<div class="signin">
+    <div class="cont cont_111 cont_nowrap cont_hor">
+        <div class="signin_title signin_title_1" onclick="signin_tab(2)">{{text.enter|upper}}</div>
+        <div class="signin_title signin_title_2 signin_title_no" onclick="signin_tab(1)">{{text.reg|upper}}</div>
+    </div>
+    <p class="signin_text display_none" id="signin_refid">{{refid}}</p>
+    <p class="signin_text" id="signin_error"></p>        
+    <p class="signin_text">{{text.mail}}:</p>
+    <input type="text" class="signin_input" id="signin_login">
+    <p class="signin_text">{{text.index.signin.4}}:</p>
+    <input type="password" class="signin_input" id="signin_password">
+    <p class="signin_text signin_inpur_reg">{{text.index.signin.4}}:<span class="signin_span">({{text.index.signin.5}})</span></p>
+    <input type="password" class="signin_input signin_inpur_reg" id="signin_password2" >
+    <p class="signin_text signin_inpur_reg">{{text.phone}}:<p>
+    <input type="text" class="signin_input signin_inpur_reg" id="signin_phone">
+    <p class="signin_text signin_inpur_reg">{{text.telegram}}:</p>
+    <input type="text" class="signin_input signin_inpur_reg" id="signin_telegram">            
+    <div class="signin_button" onclick="signin()">{{text.enter}}</div>
+    <a href="http://t.me/Lucky777wheel" class="signin_info" target="_blank"></a>
+</div>
+<a href="https://t.me/spycasino" class="signin_message width_30" target="_blank">{{text.index.signin.9}} @spycasino</a>
+<a href="https://777spy.ru/politica.html" class="signin_message width_30" target="_blank">{{text.index.signin.10}} 18+</a>
+<div class="signin_message width_30">@2020</div>
+{% endblock %}
