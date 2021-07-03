@@ -4,4 +4,4 @@
 *.pyc
 __pycache__
 # Backup files # 
-postgres/pgdata/*
+postgres/pgdata
