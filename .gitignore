@@ -1,2 +1,7 @@
-postgres/pgdata
-logs
+# Django #
+*.log
+*.pot
+*.pyc
+__pycache__
+# Backup files # 
+postgres/pgdata/*
