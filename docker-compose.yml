@@ -32,3 +32,4 @@ services:
       - ./logs:/usr/src/app/logs
     depends_on:
       - postgresdb
+      
