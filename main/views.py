@@ -10,62 +10,11 @@ from django.views.decorators.gzip import gzip_page
 
 from . import langs
 from .models import Roulette, Rule, User, UserSetting, TlgMsg, TlgMsgBacc, GlobalSetting, Baccarat, BaccRule
-from . import site_auth, roulette_api, baccarat_api
+from . import site_auth, roulette_api, baccarat_api, contexts
 
 def index(request):
     if request.user.is_authenticated:
-        roulettes = Roulette.objects.all().order_by("roul_id")
-        baccarats = Baccarat.objects.all().order_by("sort_id")
-        usr = request.user
-        tg_bot = ''
-        if usr.tlg_id and usr.is_pro:
-            tg_bot = usr.get_bot().name
-        context = {
-            'user': {
-                'login': usr.login,
-                'phone': usr.phone,
-                'telegram': usr.usr_telegram,
-                'tlg_id': usr.tlg_id,
-                'tg_bot': tg_bot,
-                'is_pro': usr.is_pro,
-                'pro_time': usr.pro_time
-            },
-            'roulettes': [
-                {
-                    'is_evol': roul.roul_id < 30,
-                    'name': roul.name,
-                    'id': roul.roul_id,
-                    "count": roul.number_set.count()
-                }
-                for roul in roulettes
-            ],
-            'baccarats': {
-                "EG":[
-                    {
-                        'provider': bacc.provider,
-                        'name': bacc.name,
-                        'id': bacc.bacc_id
-                    }
-                    for bacc in baccarats if bacc.provider == "Evolution"
-                ],
-                "Ezugi":[
-                    {
-                        'provider': bacc.provider,
-                        'name': bacc.name,
-                        'id': bacc.bacc_id
-                    }
-                    for bacc in baccarats if bacc.provider == "Ezugi"
-                ]
-            },
-            'settings': {
-                'free_roul_count': 1,
-                'free_rule_count': 3
-            },
-            'text': langs.ru,
-            'range37': range(37),
-            'range11': range(1, 12),
-            'range12': range(1, 13)
-        }
+        context = contexts.get_main_page_context(request.user)
         return render(request, 'index.html', context)
     else:
         context = {'text': langs.ru}
@@ -136,103 +85,35 @@ def get_stats(request):
 
 
 def get_choice_roul(request):
-    usr = request.user
-    data = {"user": {"is_pro": usr.is_pro}, "roulettes": []}
-    selected_rouls = list(usr.usersetting.curr_roulettes.all())
-    roulettes = Roulette.objects.all().order_by("roul_id")
-    for roulette in roulettes:
-        data["roulettes"].append(
-            {
-                "roul_id": roulette.roul_id,
-                "name": roulette.name,
-                "is_selected": roulette in selected_rouls
-            }
-        )
-    return JsonResponse(data)
+    return JsonResponse(roulette_api.get_choosen(request.user))
 
 def get_choice_bacc(request):
-    usr = request.user
-    data = {"user": {"is_pro": usr.is_pro}, "baccarats": {"Evolution":[],"Ezugi":[]}}
-    selected_baccs = list(usr.usersetting.curr_baccarats.all())
-    baccarats = Baccarat.objects.all().order_by("sort_id")
-    for baccarat in baccarats:
-        data["baccarats"][baccarat.provider].append(
-            {
-                "bacc_id": baccarat.bacc_id,
-                "name": baccarat.name,
-                "is_selected": baccarat in selected_baccs
-            }
-        )
-    return JsonResponse(data)
+    return JsonResponse(baccarat_api.get_choosen(request.user))
 
 
 def change_bacc(request):
     change_bacc_id = request.POST['param']
-    usr = request.user
-    gl_st = GlobalSetting.objects.get(version = 1000)
-    bacc = Baccarat.objects.get(bacc_id=change_bacc_id)
-    if bacc in usr.usersetting.curr_baccarats.all():
-        usr.usersetting.curr_baccarats.remove(bacc)
-    else:
-        if not usr.is_pro and usr.usersetting.curr_baccarats.count() >= gl_st.free_rouls_available:
-            data = {"status":"err","min_val":gl_st.free_rouls_available}
-            return JsonResponse(data)
-        usr.usersetting.curr_baccarats.add(bacc)
-    data = {"status":"ok"}
-    return JsonResponse(data)
+    return JsonResponse(baccarat_api.change_choise(request.user,change_bacc_id))
 
 def change_roul(request):
     change_roul_id = request.POST['param']
-    usr = request.user
-    gl_st = GlobalSetting.objects.get(version = 1000)
-    roul = Roulette.objects.get(roul_id=change_roul_id)
-    if roul in usr.usersetting.curr_roulettes.all():
-        usr.usersetting.curr_roulettes.remove(roul)
-    else:
-        if not usr.is_pro and usr.usersetting.curr_roulettes.count() >= gl_st.free_rouls_available:
-            data = {"status":"err","min_val":gl_st.free_rouls_available}
-            return JsonResponse(data)
-        usr.usersetting.curr_roulettes.add(roul)
-    data = {"status":"ok"}
-    return JsonResponse(data)
+    return JsonResponse(roulette_api.change_choise(request.user,change_roul_id))
 
 
 def get_zeros(request):
-    usr = request.user
-    data = usr.usersetting.is_zero
-    return JsonResponse(data)
-
+    return JsonResponse(roulette_api.get_zeros(request.user))
 
 def change_zero(request):
-    usr = request.user
     zr_name = request.POST['name']
-    is_zero = usr.usersetting.is_zero
-    if is_zero[zr_name]:
-        is_zero[zr_name] = 0
-    else:
-        is_zero[zr_name] = 1
-    usr.usersetting.is_zero = is_zero
-    usr.usersetting.save()
-    return JsonResponse({"status": "ok"})
+    return JsonResponse(roulette_api.change_zero(request.user,zr_name))
 
 def add_rule_bacc(request):
     usr = request.user
     name = request.POST['name']
-    gl_st = GlobalSetting.objects.get(version = 1000)
     rule_type = int(request.POST['tables'])
     count = int(request.POST['count'])
-    color = int(request.POST['color'])
-    if not usr.is_pro and usr.rule_set.count() >= gl_st.free_rules_available:
-        return JsonResponse({"status": "err","min_val":gl_st.free_rules_available})
-    rule = BaccRule(
-        name=name,
-        rule_type=rule_type,
-        count=count,
-        color=color,
-        user=usr
-    )
-    rule.save()
-    return JsonResponse({"status": "ok"})
+    color = int(request.POST['color'])   
+    return JsonResponse(baccarat_api.add_rule(usr,name,rule_type,count,color))
 
 
 def add_rule(request):
