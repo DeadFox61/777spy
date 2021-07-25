@@ -1,8 +1,11 @@
 import websocket
 import json
+from parse_logger import get_logger
 
 from db import db_main as db
 from utils import roul_stats
+
+logger = get_logger()
 
 ids = {'221000': 30,
         '221002': 31,
@@ -60,7 +63,6 @@ def on_message(ws, message):
                 curr_nums = db.get_curr(id)
 
                 if curr_nums == None:
-                    print("1")
                     data = {"id":id,"action":'clear'}
                     datas.append(data)
                     if nums:
@@ -82,10 +84,10 @@ def on_message(ws, message):
     db.proc_datas(datas)
                 
 def on_error(ws, error):
-    print(error)
+    logger.error(error)
 
 def on_close(ws):
-    print("### closed ###")
+    logger.debug("### closed ###")
 
 def on_open(ws):
     ws.send('{"MessageType":"LobbyInitializeDataByHome","ClientIP":"5.231.220.43,"ClientId":"10424001|4446531_RUB|lobby","GameID":0,"Language":"ru","Nickid":"deadfox61","currentPlayerToken":"b97243ff-1bfa-46a0-967a-a983342882f4","OperatorID":10424001,"SessionCurrency":"RUB","UID":"4446531_RUB","clientType":"html"}')
@@ -104,4 +106,4 @@ def parse_ezugi():
         try:
             ws.run_forever()
         except Exception as e:
-            print(e)
+            logger.error(e)

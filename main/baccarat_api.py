@@ -60,6 +60,7 @@ def change_choise(usr,bacc_id):
 
 
 def add_rule(usr,name,rule_type,count,color):
+    """Создаёт и добавляет правило в БД"""
     gl_st = GlobalSetting.objects.get(version = 1000)
     if not usr.is_pro and usr.rule_set.count() >= gl_st.free_rules_available:
         return {"status": "err","min_val":gl_st.free_rules_available}
@@ -72,3 +73,56 @@ def add_rule(usr,name,rule_type,count,color):
     )
     rule.save()
     return {"status": "ok"}
+
+def get_rules(usr):
+    """Возвращает список правил юзера"""
+    rules = BaccRule.objects.filter(user=usr)
+    data_rules = []
+    for rule in rules:
+        rule_text = rule.get_text_info()
+        data_rules.append(
+            {
+                "id": rule.id,
+                "name": rule_text["name"],
+                "rule_type": rule_text["rule_type"],
+                "count": rule_text["count"],
+                "color": rule_text["color"],
+                "is_tg_on": rule.is_tg_on
+            }
+        )
+    return {"rules": data_rules}
+
+def del_rule(rule_id):
+    """Удаляет правило"""
+    BaccRule.objects.get(id=rule_id).delete()
+    return {"status": "ok"}
+
+def get_rule(rule_id):
+    """Возвращает правило с id rule_id"""
+    rule = BaccRule.objects.get(id=rule_id)
+    return  {
+                "id": rule.id,
+                "name": rule.name,
+                "rule_type": rule.rule_type,
+                "count": rule.count,
+                "color": rule.color
+            }
+def change_tg(usr,rule_id,is_on):
+    """Включает/выключает уведомления в телеграм"""
+    rule = BaccRule.objects.get(id=rule_id)
+    rule_type = rule.rule_type
+    count = rule.count
+    gl_st = GlobalSetting.objects.get(version = 1000)
+    if not usr.is_pro:
+        rule.is_tg_on = False
+        TlgMsgBacc.objects.filter(rule=rule).delete()
+        rule.save()
+        return {"status": "err_pro"}
+    else:
+        if is_on:
+            rule.is_tg_on = True
+        else:
+            rule.is_tg_on = False
+            TlgMsgBacc.objects.filter(rule=rule).delete()
+        rule.save()
+        return {"status": "ok"}

@@ -22,10 +22,19 @@ services:
       - postgresdb
     ports:
       - "8000:8000"
-  parsing_ezugi_roulette:
+  parse_ezugi_roulette:
     build:
       context: ./parsing
-      dockerfile: ./docker/ezugi_roulette/Dockerfile
+      dockerfile: Dockerfile_ezugi_roulette
+    volumes:
+      - ./parsing:/usr/src/app
+      - ./logs:/usr/src/app/logs
+    depends_on:
+      - postgresdb
+  parse_evo_id:
+    build:
+      context: ./parsing
+      dockerfile: Dockerfile_evo_id
     volumes:
       - ./parsing:/usr/src/app
       - ./logs:/usr/src/app/logs

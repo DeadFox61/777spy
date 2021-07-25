@@ -1,9 +1,9 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from loguru import logger
+from parse_logger import get_logger
 import time
 
-logger.add("logs/parse.log", format="{time} {level} {message}", rotation="100 MB", compression = "zip") 
+logger = get_logger()
 
 def get_conn():
     while True:

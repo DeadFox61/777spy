@@ -37,15 +37,15 @@ def ajax(request):
             return HttpResponse("0_mail")
         if not re.match(r"^([0-9]|[a-z]|[A-Z]){6,}$", password):
             return HttpResponse("0_pass_1")
+        # Логин
         if request.POST['button'] == "1":
             user = authenticate(request, login=user_login, password=password)
             if user is not None:
-                # A backend authenticated the credentials
                 login(request, user)
                 return HttpResponse("1_ok")
             else:
-                # No backend authenticated the credentials
                 return HttpResponse("1_no")
+        # Регистрация
         elif request.POST['button'] == "2":
             password2 = request.POST['password2']
             if password != password2:
@@ -69,215 +69,6 @@ def ajax(request):
             return HttpResponse("2_ok")
     return HttpResponse("aga")
 
-def get_stats_bacc(request):
-    if request.user.is_anonymous:
-        return HttpResponse("anon")
-    return JsonResponse(baccarat_api.get_stats(request.user))
-    
-
-@gzip_page
-def get_stats(request):
-    if request.user.is_anonymous:
-        return HttpResponse("anon")
-    else:
-        return JsonResponse(roulette_api.get_stats(request.user))
-    
-
-
-def get_choice_roul(request):
-    return JsonResponse(roulette_api.get_choosen(request.user))
-
-def get_choice_bacc(request):
-    return JsonResponse(baccarat_api.get_choosen(request.user))
-
-
-def change_bacc(request):
-    change_bacc_id = request.POST['param']
-    return JsonResponse(baccarat_api.change_choise(request.user,change_bacc_id))
-
-def change_roul(request):
-    change_roul_id = request.POST['param']
-    return JsonResponse(roulette_api.change_choise(request.user,change_roul_id))
-
-
-def get_zeros(request):
-    return JsonResponse(roulette_api.get_zeros(request.user))
-
-def change_zero(request):
-    zr_name = request.POST['name']
-    return JsonResponse(roulette_api.change_zero(request.user,zr_name))
-
-def add_rule_bacc(request):
-    usr = request.user
-    name = request.POST['name']
-    rule_type = int(request.POST['tables'])
-    count = int(request.POST['count'])
-    color = int(request.POST['color'])   
-    return JsonResponse(baccarat_api.add_rule(usr,name,rule_type,count,color))
-
-
-def add_rule(request):
-    usr = request.user
-    name = request.POST['name']
-    gl_st = GlobalSetting.objects.get(version = 1000)
-    is_in_row = bool(int(request.POST['tables']))
-    rule_type = int(request.POST['col'])
-    how_many_in_row = int(request.POST['count'])
-    color = int(request.POST['color'])
-    if not usr.is_pro and usr.rule_set.count() >= gl_st.free_rules_available:
-        return JsonResponse({"status": "err","min_val":gl_st.free_rules_available})
-    rule = Rule(
-        name=name,
-        is_in_row=is_in_row,
-        rule_type=rule_type,
-        how_many_in_row=how_many_in_row,
-        color=color,
-        user=usr
-    )
-    rule.save()
-    return JsonResponse({"status": "ok"})
-
-def get_rules_bacc(request):
-    usr = request.user
-    rules = BaccRule.objects.filter(user=usr)
-    data_rules = []
-    for rule in rules:
-        rule_text = rule.get_text_info()
-        data_rules.append(
-            {
-                "id": rule.id,
-                "name": rule_text["name"],
-                "rule_type": rule_text["rule_type"],
-                "count": rule_text["count"],
-                "color": rule_text["color"],
-                "is_tg_on": rule.is_tg_on
-            }
-        )
-    return JsonResponse({"rules": data_rules})
-
-def get_rules(request):
-    usr = request.user
-    rules = Rule.objects.filter(user=usr)
-    data_rules = []
-    for rule in rules:
-        rule_text = rule.get_text_info()
-        data_rules.append(
-            {
-                "id": rule.id,
-                "name": rule_text["name"],
-                "is_in_row": rule_text["is_in_row"],
-                "rule_type": rule_text["rule_type"],
-                "how_many_in_row": rule_text["how_many_in_row"],
-                "color": rule_text["color"],
-                "is_tg_on": rule.is_tg_on
-            }
-        )
-    return JsonResponse({"rules": data_rules})
-
-def del_rule_bacc(request):
-    rule_id = int(request.POST['id'])
-    BaccRule.objects.get(id=rule_id).delete()
-    return JsonResponse({"status": "ok"})
-
-def del_rule(request):
-    rule_id = int(request.POST['id'])
-    Rule.objects.get(id=rule_id).delete()
-    return JsonResponse({"status": "ok"})
-
-def get_clean_rule_bacc(request):
-    rule_id = int(request.POST['id'])
-    rule = BaccRule.objects.get(id=rule_id)
-    return JsonResponse(
-        {
-            "id": rule.id,
-            "name": rule.name,
-            "rule_type": rule.rule_type,
-            "count": rule.count,
-            "color": rule.color
-        }
-    )
-
-def get_clean_rule(request):
-    rule_id = int(request.POST['id'])
-    rule = Rule.objects.get(id=rule_id)
-    return JsonResponse(
-        {
-            "id": rule.id,
-            "name": rule.name,
-            "is_in_row": rule.is_in_row,
-            "rule_type": rule.rule_type,
-            "how_many_in_row": rule.how_many_in_row,
-            "color": rule.color
-        }
-    )
-
-def change_tg_bacc(request):
-    usr = request.user
-    rule_id = int(request.POST['id'])
-    is_on = bool(int(request.POST['param']))
-    rule = BaccRule.objects.get(id=rule_id)
-    rule_type = rule.rule_type
-    count = rule.count
-    gl_st = GlobalSetting.objects.get(version = 1000)
-    if not usr.is_pro:
-        rule.is_tg_on = False
-        TlgMsgBacc.objects.filter(rule=rule).delete()
-        rule.save()
-        return JsonResponse({"status": "err_pro"})
-    else:
-        if is_on:
-            rule.is_tg_on = True
-        else:
-            rule.is_tg_on = False
-            TlgMsgBacc.objects.filter(rule=rule).delete()
-        rule.save()
-        return JsonResponse({"status": "ok"})
-
-def change_tg(request):
-    usr = request.user
-    rule_id = int(request.POST['id'])
-    is_on = bool(int(request.POST['param']))
-    rule = Rule.objects.get(id=rule_id)
-    rule_type = rule.rule_type
-    how_many_in_row = rule.how_many_in_row
-    gl_st = GlobalSetting.objects.get(version = 1000)
-    if not usr.is_pro:
-        rule.is_tg_on = False
-        TlgMsg.objects.filter(rule=rule).delete()
-        rule.save()
-        return JsonResponse({"status": "err_pro"})
-    else:
-        if is_on:
-            if rule_type == 1 or rule_type == 2 or rule_type == 3:
-                if how_many_in_row < gl_st.min_chances:
-                    return JsonResponse({"status": "err","min_val":gl_st.min_chances})
-            elif rule_type == 4 or rule_type == 5:
-                if how_many_in_row < gl_st.min_columns_and_dozens:
-                    return JsonResponse({"status": "err","min_val":gl_st.min_columns_and_dozens})
-            elif rule_type == 6:
-                if how_many_in_row < gl_st.min_sectors_3:
-                    return JsonResponse({"status": "err","min_val":gl_st.min_sectors_3})
-            elif rule_type == 7:
-                if how_many_in_row < gl_st.min_sectors_6:
-                    return JsonResponse({"status": "err","min_val":gl_st.min_sectors_6})
-            elif rule_type == 8:
-                if how_many_in_row < gl_st.min_sectors:
-                    return JsonResponse({"status": "err","min_val":gl_st.min_sectors})
-            elif rule_type == 9:
-                if how_many_in_row < gl_st.min_alts:
-                    return JsonResponse({"status": "err","min_val":gl_st.min_alts})
-            elif rule_type == 10:
-                if how_many_in_row < gl_st.min_numbers:
-                    return JsonResponse({"status": "err","min_val":gl_st.min_numbers})
-            elif rule_type == 11:
-                if how_many_in_row < 30:
-                    return JsonResponse({"status": "err","min_val":30})
-            rule.is_tg_on = True
-        else:
-            rule.is_tg_on = False
-            TlgMsg.objects.filter(rule=rule).delete()
-        rule.save()
-        return JsonResponse({"status": "ok"})
 
 def save_tg_id(request):
     tlg_id = request.POST['param']
@@ -291,3 +82,92 @@ def add_sec(request):
     usr.online_time_sec+=1
     usr.save()
     return HttpResponse("ok")
+
+
+
+# ajax - view рулеток
+
+@gzip_page
+def get_stats(request):
+    if request.user.is_anonymous:
+        return HttpResponse("anon")
+    else:
+        return JsonResponse(roulette_api.get_stats(request.user))
+    
+def get_choice_roul(request):
+    return JsonResponse(roulette_api.get_choosen(request.user))
+
+def change_roul(request):
+    change_roul_id = request.POST['param']
+    return JsonResponse(roulette_api.change_choise(request.user,change_roul_id))
+
+def get_zeros(request):
+    return JsonResponse(roulette_api.get_zeros(request.user))
+
+def change_zero(request):
+    zr_name = request.POST['name']
+    return JsonResponse(roulette_api.change_zero(request.user,zr_name))
+
+def add_rule(request):
+    usr = request.user
+    name = request.POST['name']
+    is_in_row = bool(int(request.POST['tables']))
+    rule_type = int(request.POST['col'])
+    count = int(request.POST['count'])
+    color = int(request.POST['color'])
+    return JsonResponse(roulette_api.add_rule(usr,name,rule_type,count,color))
+
+def get_rules(request):
+    return JsonResponse(roulette_api.get_rules(request.user))
+
+def del_rule(request):
+    rule_id = int(request.POST['id'])
+    return JsonResponse(roulette_api.del_rule(rule_id))
+
+def get_rule(request):
+    rule_id = int(request.POST['id'])
+    return JsonResponse(roulette_api.get_rule(rule_id))
+
+def change_tg(request):
+    usr = request.user
+    rule_id = int(request.POST['id'])
+    is_on = bool(int(request.POST['param']))
+    return JsonResponse(roulette_api.change_tg(usr,rule_id,is_on))
+
+# ajax-ы баккарат
+def get_stats_bacc(request):
+    if request.user.is_anonymous:
+        return HttpResponse("anon")
+    return JsonResponse(baccarat_api.get_stats(request.user))
+
+def get_choice_bacc(request):
+    return JsonResponse(baccarat_api.get_choosen(request.user))
+
+def change_bacc(request):
+    change_bacc_id = request.POST['param']
+    return JsonResponse(baccarat_api.change_choise(request.user,change_bacc_id))
+
+def add_rule_bacc(request):
+    usr = request.user
+    name = request.POST['name']
+    rule_type = int(request.POST['tables'])
+    count = int(request.POST['count'])
+    color = int(request.POST['color'])   
+    return JsonResponse(baccarat_api.add_rule(usr,name,rule_type,count,color))
+
+def get_rules_bacc(request):
+    return JsonResponse(baccarat_api.get_rules(request.user))
+
+def del_rule_bacc(request):
+    rule_id = int(request.POST['id'])
+    return JsonResponse(baccarat_api.del_rule(rule_id))
+
+def get_rule_bacc(request):
+    rule_id = int(request.POST['id'])
+    return JsonResponse(baccarat_api.get_rule(rule_id))
+
+def change_tg_bacc(request):
+    usr = request.user
+    rule_id = int(request.POST['id'])
+    is_on = bool(int(request.POST['param']))
+    return JsonResponse(baccarat_api.change_tg(usr,rule_id,is_on))

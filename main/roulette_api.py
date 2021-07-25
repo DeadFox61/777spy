@@ -79,3 +79,99 @@ def change_zero(usr,zr_name):
     usr.usersetting.is_zero = is_zero
     usr.usersetting.save()
     return {"status": "ok"}
+
+
+def add_rule(usr, name, is_in_row, rule_type, count, color):
+    """Создаёт и добавляет правило в БД"""
+    gl_st = GlobalSetting.objects.get(version = 1000)
+    if not usr.is_pro and usr.rule_set.count() >= gl_st.free_rules_available:
+        return {"status": "err","min_val":gl_st.free_rules_available}
+    rule = Rule(
+        name=name,
+        is_in_row=is_in_row,
+        rule_type=rule_type,
+        how_many_in_row=count,
+        color=color,
+        user=usr
+    )
+    rule.save()
+    return {"status": "ok"}
+
+def get_rules(usr):
+    """Возвращает список правил юзера"""
+    rules = Rule.objects.filter(user=usr)
+    data_rules = []
+    for rule in rules:
+        rule_text = rule.get_text_info()
+        data_rules.append(
+            {
+                "id": rule.id,
+                "name": rule_text["name"],
+                "is_in_row": rule_text["is_in_row"],
+                "rule_type": rule_text["rule_type"],
+                "how_many_in_row": rule_text["how_many_in_row"],
+                "color": rule_text["color"],
+                "is_tg_on": rule.is_tg_on
+            }
+        )
+    return {"rules": data_rules}
+
+def del_rule(rule_id):
+    """Удаляет правило с id rule_id"""
+    Rule.objects.get(id=rule_id).delete()
+    return {"status": "ok"}
+
+def get_rule(rule_id):
+    """Возвращает правило с id rule_id в виде json"""
+    rule = Rule.objects.get(id=rule_id)
+    return  {
+                "id": rule.id,
+                "name": rule.name,
+                "is_in_row": rule.is_in_row,
+                "rule_type": rule.rule_type,
+                "how_many_in_row": rule.how_many_in_row,
+                "color": rule.color
+            }
+def change_tg(usr,rule_id,is_on):
+    """Включает/выключает уведомления в телеграм для правила с id rule_id"""
+    rule = Rule.objects.get(id=rule_id)
+    rule_type = rule.rule_type
+    how_many_in_row = rule.how_many_in_row
+    gl_st = GlobalSetting.objects.get(version = 1000)
+    if not usr.is_pro:
+        rule.is_tg_on = False
+        TlgMsg.objects.filter(rule=rule).delete()
+        rule.save()
+        return {"status": "err_pro"}
+    else:
+        if is_on:
+            if rule_type == 1 or rule_type == 2 or rule_type == 3:
+                if how_many_in_row < gl_st.min_chances:
+                    return {"status": "err","min_val":gl_st.min_chances}
+            elif rule_type == 4 or rule_type == 5:
+                if how_many_in_row < gl_st.min_columns_and_dozens:
+                    return {"status": "err","min_val":gl_st.min_columns_and_dozens}
+            elif rule_type == 6:
+                if how_many_in_row < gl_st.min_sectors_3:
+                    return {"status": "err","min_val":gl_st.min_sectors_3}
+            elif rule_type == 7:
+                if how_many_in_row < gl_st.min_sectors_6:
+                    return {"status": "err","min_val":gl_st.min_sectors_6}
+            elif rule_type == 8:
+                if how_many_in_row < gl_st.min_sectors:
+                    return {"status": "err","min_val":gl_st.min_sectors}
+            elif rule_type == 9:
+                if how_many_in_row < gl_st.min_alts:
+                    return {"status": "err","min_val":gl_st.min_alts}
+            elif rule_type == 10:
+                if how_many_in_row < gl_st.min_numbers:
+                    return {"status": "err","min_val":gl_st.min_numbers}
+            elif rule_type == 11:
+                if how_many_in_row < 30:
+                    return {"status": "err","min_val":30}
+            rule.is_tg_on = True
+        else:
+            rule.is_tg_on = False
+            TlgMsg.objects.filter(rule=rule).delete()
+        rule.save()
+        return {"status": "ok"}

@@ -1,9 +1,9 @@
-from loguru import logger
+from parse_logger import get_logger
 from datetime import datetime
 import json
 from db import _db
 
-logger.add("logs/parse.log", format="{time} {level} {message}", rotation="100 MB", compression = "zip") 
+logger = get_logger()
 
 @logger.catch
 def get_conn():
@@ -96,6 +96,17 @@ WHERE version = {version}""")
     conn.close()
     return rows[0]["evo_id"]
 
+def set_evo_id(evo_id, version = 1000):
+    conn = get_conn()
+    cursor = get_cursor(conn)
+    cursor.execute(f"UPDATE main_parsedata SET evo_id='{evo_id}' WHERE version='1000'")
+    logger.debug(f"{evo_id} updated")
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
 def update_bacca(bacc_id, game_state, stats):
     stats_str = json.dumps(stats)
     conn = get_conn()
@@ -110,3 +121,5 @@ def update_bacca(bacc_id, game_state, stats):
     conn.commit()
     cursor.close()
     conn.close()
+
+

@@ -13,7 +13,7 @@ urlpatterns = [
     path('add_rule', views.add_rule, name='add_rule'),
     path('get_rules', views.get_rules, name='get_rules'),
     path('del_rule', views.del_rule, name='del_rule'),
-    path('get_clean_rule', views.get_clean_rule, name='get_clean_rule'),
+    path('get_clean_rule', views.get_rule, name='get_rule'),
     path('pro', views.pro, name='pro'),
     path('change_tg', views.change_tg, name='change_tg'),
     path('change_tg_bacc', views.change_tg_bacc, name='change_tg_bacc'),
@@ -24,6 +24,6 @@ urlpatterns = [
     path('add_rule_bacc', views.add_rule_bacc, name='add_rule_bacc'),
     path('get_rules_bacc', views.get_rules_bacc, name='get_rules_bacc'),
     path('del_rule_bacc', views.del_rule_bacc, name='del_rule_bacc'),
-    path('get_clean_rule_bacc', views.get_clean_rule_bacc, name='get_clean_rule_bacc'),
+    path('get_clean_rule_bacc', views.get_rule_bacc, name='get_rule_bacc'),
     path('get_stats_bacc', views.get_stats_bacc, name='get_stats_bacc')
 ]
