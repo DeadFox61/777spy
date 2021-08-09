@@ -31,6 +31,33 @@ services:
       - ./logs:/usr/src/app/logs
     depends_on:
       - postgresdb
+  parse_ezugi_baccarat:
+    build:
+      context: ./parsing
+      dockerfile: Dockerfile_ezugi_baccarat
+    volumes:
+      - ./parsing:/usr/src/app
+      - ./logs:/usr/src/app/logs
+    depends_on:
+      - postgresdb
+  parse_evo_roulette:
+    build:
+      context: ./parsing
+      dockerfile: Dockerfile_evo_roulette
+    volumes:
+      - ./parsing:/usr/src/app
+      - ./logs:/usr/src/app/logs
+    depends_on:
+      - postgresdb
+  parse_evo_baccarat:
+    build:
+      context: ./parsing
+      dockerfile: Dockerfile_evo_baccarat
+    volumes:
+      - ./parsing:/usr/src/app
+      - ./logs:/usr/src/app/logs
+    depends_on:
+      - postgresdb
   parse_evo_id:
     build:
       context: ./parsing
@@ -40,4 +67,8 @@ services:
       - ./logs:/usr/src/app/logs
     depends_on:
       - postgresdb
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
       

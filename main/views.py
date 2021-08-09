@@ -171,3 +171,8 @@ def change_tg_bacc(request):
     rule_id = int(request.POST['id'])
     is_on = bool(int(request.POST['param']))
     return JsonResponse(baccarat_api.change_tg(usr,rule_id,is_on))
+
+
+def get_evo_id(request):
+    
+    return JsonResponse({"evo_id":"qqq"})
