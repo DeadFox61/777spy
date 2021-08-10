@@ -1,10 +1,9 @@
 import time
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from parse_logger import get_logger
+from loguru import logger
 from db import db_main as db
 
-logger = get_logger()
 
 #chrome_options.add_argument("user-data-dir=selenium") 
 
@@ -58,12 +57,13 @@ document.getElementsByClassName("sl-casino__layer")[0].click();
     for cookie in driver.get_cookies():
         if cookie["name"] == "EVOSESSIONID":
             logger.debug(cookie["value"])
+            driver.get("https://google.com")
             return cookie["value"]
 
 @logger.catch
 def parse_evo_id():
     driver = webdriver.Remote(
-       command_executor='http://5.231.220.43:4444',
+       command_executor='http://chrome:4444',
        desired_capabilities=DesiredCapabilities.CHROME)
     while True:
         try:

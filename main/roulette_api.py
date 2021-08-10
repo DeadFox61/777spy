@@ -1,4 +1,4 @@
-from .models import Roulette, Rule, GlobalSetting
+from .models import Roulette, Rule, GlobalSetting, TlgMsg
 
 def get_stats(user):
     """Возвращает статистику рулеток"""

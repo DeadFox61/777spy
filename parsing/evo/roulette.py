@@ -4,9 +4,9 @@ import time
 
 from db import db_main as db
 from utils import roul_stats
-from parse_logger import get_logger
+from loguru import logger
 
-logger = get_logger()
+
 #'wzg6kdkad1oe7m5k':4,12
 ROUL_IDS= {
     'LightningTable01':1,

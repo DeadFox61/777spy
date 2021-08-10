@@ -5,5 +5,11 @@
 *.pot
 *.pyc
 __pycache__
+
 # Backup files # 
 postgres/pgdata
+
+
+# Other
+parsing/sess_id.txt
+dump.sql

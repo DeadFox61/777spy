@@ -1,8 +1,9 @@
 import time
 from evo.evo_id import parse_evo_id
-from parse_logger import get_logger
+from loguru import logger
+from parse_logger import configure_logger
 
-logger = get_logger()
+configure_logger("id")
 while True:
     try:
         parse_evo_id()

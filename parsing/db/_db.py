@@ -1,9 +1,7 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from parse_logger import get_logger
+from loguru import logger
 import time
-
-logger = get_logger()
 
 def get_conn():
     while True:

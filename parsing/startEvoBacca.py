@@ -1,8 +1,9 @@
 import time
 from evo.baccarat import parse_evo
-from parse_logger import get_logger
+from loguru import logger
+from parse_logger import configure_logger
 
-logger = get_logger()
+configure_logger("evo_bacc")
 while True:
     try:
         parse_evo()

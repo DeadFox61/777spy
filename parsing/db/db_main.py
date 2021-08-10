@@ -1,9 +1,8 @@
-from parse_logger import get_logger
+from loguru import logger
 from datetime import datetime
 import json
 from db import _db
 
-logger = get_logger()
 
 @logger.catch
 def get_conn():

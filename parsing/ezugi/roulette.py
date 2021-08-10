@@ -1,11 +1,10 @@
 import websocket
 import json
-from parse_logger import get_logger
+from loguru import logger
 
 from db import db_main as db
 from utils import roul_stats
 
-logger = get_logger()
 
 ids = {'221000': 30,
         '221002': 31,

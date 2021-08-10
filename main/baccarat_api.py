@@ -1,4 +1,4 @@
-from .models import Baccarat, BaccRule, GlobalSetting
+from .models import Baccarat, BaccRule, GlobalSetting, TlgMsgBacc
 
 def get_stats(user):
     """Возвращает всю статистику по баккарам, выбранным у пользователя"""

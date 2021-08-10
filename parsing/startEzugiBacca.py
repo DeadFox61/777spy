@@ -1,8 +1,9 @@
 import time
 from ezugi.baccarat import parse_ezugi
-from parse_logger import get_logger
+from loguru import logger
+from parse_logger import configure_logger
 
-logger = get_logger()
+configure_logger("ezugi_bacc")
 while True:
     try:
         parse_ezugi()
