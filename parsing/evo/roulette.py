@@ -1,6 +1,7 @@
 import websocket
 import json
 import time
+import requests
 
 from db import db_main as db
 from utils import roul_stats
@@ -32,6 +33,8 @@ ROUL_IDS= {
     'o44hwr2lc3a7spdh':22
 }
 
+def get_evo_id():
+    return requests.get("http://5.231.220.43:5000/evo_id").text
 
 def nice_print_roul(values):
     msg=""
@@ -126,7 +129,7 @@ def on_open(ws):
 
 def start_socket():
     #websocket.enableTrace(True)
-    evo_id = db.get_evo_id()
+    evo_id = get_evo_id()
     ws = websocket.WebSocketApp(f"wss://marathonbet-com.evo-games.com/public/lobby/player/socket?messageFormat=json&EVOSESSIONID={evo_id}&client_version=6.20210406.71854.5551-09fabd4f4a",
                               on_open = on_open,
                               on_message = on_message,

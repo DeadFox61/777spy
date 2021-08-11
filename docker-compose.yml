@@ -58,27 +58,4 @@ services:
       - ./logs:/usr/src/app/logs
     depends_on:
       - postgresdb
-  parse_evo_id:
-    build:
-      context: ./parsing
-      dockerfile: Dockerfile_evo_id
-    volumes:
-      - ./parsing:/usr/src/app
-      - ./logs:/usr/src/app/logs
-    depends_on:
-      - postgresdb
-  redis:
-    image: redis
-    ports:
-      - "6379:6379"
-  chrome:
-    image: selenium/standalone-chrome:4.0.0-rc-1-prerelease-20210713
-    shm_size: 2gb
-    environment:
-      - HTTP_PROXY=https://777spy:SPY777spy@185.138.234.199:65233
-      - HTTPS_PROXY=https://777spy:SPY777spy@185.138.234.199:65233
-      - noProxy=127.0.0.0/8
-    ports:
-      - "4444:4444"
-      - "7900:7900"
       

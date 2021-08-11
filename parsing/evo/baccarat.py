@@ -1,6 +1,7 @@
 import websocket
 import json
 import time
+import requests
 
 from db import db_main as db
 from utils.rules_bacc import Rules
@@ -35,6 +36,8 @@ BACCARAT_NAMES = {
     "ndgvs3tqhfuaadyg": "Baccarat C"
 }
 
+def get_evo_id():
+    return requests.get("http://5.231.220.43:5000/evo_id").text
 
 def get_game_state(values):
     msg=""
@@ -135,7 +138,7 @@ def on_open(ws):
 
 def start_socket():
     #websocket.enableTrace(True)
-    evo_id = db.get_evo_id()
+    evo_id = get_evo_id()
     ws = websocket.WebSocketApp(f"wss://marathonbet-com.evo-games.com/public/lobby/player/socket?messageFormat=json&EVOSESSIONID={evo_id}&client_version=6.20210406.71854.5551-09fabd4f4a",
                               on_open = on_open,
                               on_message = on_message,
