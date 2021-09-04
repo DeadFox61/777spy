@@ -1,7 +1,13 @@
 {% extends "base_generic.html" %}
 
-{% block content %}
 {% load static %}
+
+{% block script %}
+    <script src="{% static 'auth.js' %}" ></script>
+{% endblock %}
+
+{% block content %}
+
 <img src="{% static 'file/logo.png' %}" alt="" class="logo logo_signin">
 <div class="signin">
     <div class="cont cont_111 cont_nowrap cont_hor">
@@ -22,8 +28,10 @@
     <input type="text" class="signin_input signin_inpur_reg" id="signin_telegram">            
     <div class="signin_button" onclick="signin()">{{text.enter}}</div>
     <a href="http://t.me/Lucky777wheel" class="signin_info" target="_blank"></a>
+    <a href="//freekassa.ru/"><img src="//www.free-kassa.ru/img/fk_btn/30.png" title="Приём оплаты на сайте картами"></a>
 </div>
 <a href="https://t.me/spycasino" class="signin_message width_30" target="_blank">{{text.index.signin.9}} @spycasino</a>
 <a href="https://777spy.ru/politica.html" class="signin_message width_30" target="_blank">{{text.index.signin.10}} 18+</a>
+
 <div class="signin_message width_30">@2020</div>
 {% endblock %}

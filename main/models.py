@@ -1,6 +1,9 @@
 import telebot
+from django.contrib import admin
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
+from django.utils import timezone
+from django.db.models.functions import Greatest
 
 from . import langs
 
@@ -120,6 +123,7 @@ class TlgBot(models.Model):
         return f"{self.name} bot"
 
 
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
         account = self.model(login=self.normalize_email(email), **extra_fields)
@@ -147,7 +151,10 @@ class CustomUserManager(BaseUserManager):
 class User(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    is_pro = models.BooleanField(default=False)
+    is_partner = models.BooleanField(default=False)
+
+    referrer = models.ForeignKey('User', null=True, blank=True, on_delete=models.SET_NULL)
+    referrer_link = models.ForeignKey('RefLink', null=True, blank=True, on_delete=models.SET_NULL, related_name='referrals')
 
     login = models.EmailField(unique=True)
     phone = models.CharField(max_length=20, null=True, blank=True)
@@ -161,6 +168,10 @@ class User(AbstractBaseUser):
     EMAIL_FIELD = 'login'
     REQUIRED_FIELDS = []
     objects = CustomUserManager()
+
+    @admin.display(description='is pro', boolean = True, ordering='pro_time')
+    def get_is_pro(self):
+        return self.pro_time > timezone.now()
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
@@ -189,7 +200,7 @@ class User(AbstractBaseUser):
 
 class UserSetting(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    curr_roulettes = models.ManyToManyField(Roulette, null=True)
+    curr_roulettes = models.ManyToManyField(Roulette, null=True, blank=True)
     curr_baccarats = models.ManyToManyField(Baccarat, null=True, blank=True)
     is_zero = models.JSONField(
         default={
@@ -199,11 +210,59 @@ class UserSetting(models.Model):
             "alt_dozen_column": 0
         }
     )
+    checked_nums = models.JSONField(default=[])
     show_nums_count = models.IntegerField(default=100)
+    individual_stats = models.JSONField(default={})
 
     def __str__(self):
         return f"{self.user.login} settings"
 
+class PartnerSetting(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    balance_current = models.IntegerField(default=0)
+    balance_wait = models.IntegerField(default=0)
+    balance_paid = models.IntegerField(default=0)
+    curr_promo = models.ManyToManyField('Promo', null=True, blank=True)
+    def get_clicks_count(self):
+        reflinks = self.user.reflink_set.all()
+        count = 0
+        for reflink in reflinks:
+            count += reflink.get_clicks_count()
+        return count
+
+    def get_reg_count(self):
+        reflinks = self.user.reflink_set.all()
+        count = 0
+        for reflink in reflinks:
+            count += reflink.get_reg_count()
+        return count
+
+
+class Promo(models.Model):
+    value = models.CharField(max_length=255, unique=True)
+    free_days = models.IntegerField(default=0)
+    def __str__(self):
+        return f"{self.value}"
+
+class RefLink(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    value = models.CharField(max_length=255, unique=True)
+    promo = models.ForeignKey(Promo, null=True, blank=True, on_delete=models.SET_NULL)
+    source = models.CharField(max_length=255, blank=True)
+    comment = models.CharField(max_length=255, blank=True)
+
+    def get_clicks_count(self):
+        return self.clickentry_set.count()
+    def get_reg_count(self):
+        return self.referrals.count()
+    def __str__(self):
+        return f"{self.value} link of {self.user.login}"
+
+class ClickEntry(models.Model):
+    link = models.ForeignKey(RefLink, on_delete=models.CASCADE)
+    ip = models.CharField(max_length=25, unique=True)
+    def __str__(self):
+        return f"{self.ip} click of {self.link}"
 
 class Rule(models.Model):
     name = models.CharField(max_length=50)

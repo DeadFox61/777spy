@@ -1,5 +1,11 @@
 {% extends "base_generic.html" %}
 
+{% load static %}
+
+{% block script %}
+    <script src="{% static 'main.js' %}" ></script>
+{% endblock %}
+
 {% block content %}
 <div class="cont cont_111 cont_nowrap cont_hor page">
         <!-- меню -->
@@ -562,6 +568,7 @@
                 <div id="number" class=" ml_20 mr_20 border_box"></div>            
             <div class="height_100"></div>
         </div>
+        <a href="//freekassa.ru/"><img src="//www.free-kassa.ru/img/fk_btn/30.png" title="Приём оплаты на сайте картами"></a>
     </div>
 </div>
 {% endblock %}

@@ -1,8 +1,8 @@
 import re
 
 from django.contrib.auth import authenticate
-from django.contrib.auth import login
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.contrib.auth import login, logout
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 
 from django.views import generic
@@ -10,9 +10,15 @@ from django.views.decorators.gzip import gzip_page
 
 from . import langs
 from .models import Roulette, Rule, User, UserSetting, TlgMsg, TlgMsgBacc, GlobalSetting, Baccarat, BaccRule
-from . import site_auth, roulette_api, baccarat_api, contexts
+from . import site_auth, roulette_api, baccarat_api, contexts, partner_api
+
 
 def index(request):
+    if 'refid' in request.GET:
+        response = HttpResponseRedirect('/')
+        site_auth.add_click(request.GET['refid'], request.META.get('HTTP_X_REAL_IP'))
+        response.set_cookie('refid', request.GET['refid'])
+        return response
     if request.user.is_authenticated:
         context = contexts.get_main_page_context(request.user)
         return render(request, 'index.html', context)
@@ -23,6 +29,12 @@ def index(request):
 def pro(request):
     return render(request, 'pro.html', {})
 
+def partner(request):
+    if request.user.is_authenticated and request.user.is_partner:
+        context = contexts.get_partner_page_context(request.user)
+        return render(request, 'partner.html', context)
+    else: 
+        raise Http404()
 
 # ajax-ы
 
@@ -58,15 +70,22 @@ def ajax(request):
             signin_telegram = request.POST['signin_telegram']
             if signin_telegram and not re.match(r"^@?([0-9]|[a-z]|[A-Z]){3,}$", signin_telegram):
                 return HttpResponse("2_telegram")
+
+            refid = request.COOKIES.get('refid')
             site_auth.sign_up(
                 user_login,
                 password,
                 phone=signin_phone,
-                usr_telegram=signin_telegram
+                usr_telegram=signin_telegram,
+                refid = refid
             )
             user = authenticate(request, login=user_login, password=password)
             login(request, user)
             return HttpResponse("2_ok")
+    elif request.POST['type'] == 'quit':
+        logout(request)
+        return JsonResponse({'status':'ok'})
+
     return HttpResponse("aga")
 
 
@@ -173,6 +192,17 @@ def change_tg_bacc(request):
     return JsonResponse(baccarat_api.change_tg(usr,rule_id,is_on))
 
 
-def get_evo_id(request):
-    
-    return JsonResponse({"evo_id":"qqq"})
+def partner_ajax(request):
+    ajax_type = request.POST['type']
+    if ajax_type == 'add_new_ref_link':
+        return JsonResponse(partner_api.add_new_ref_link(request.user))
+    elif ajax_type == 'del_ref_link':
+        value = request.POST['value']
+        return JsonResponse(partner_api.del_ref_link(request.user, value))
+    elif ajax_type == 'partner_ref_edit_save':
+        ref_value = request.POST['ref_value']
+        promo_value = request.POST['promo_value']
+        source = request.POST['source']
+        comment = request.POST['comment']
+        return JsonResponse(partner_api.partner_ref_edit_save(request.user, ref_value, promo_value, source, comment))
+    return JsonResponse({'status':'invalid_type'})

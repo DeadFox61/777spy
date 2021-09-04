@@ -1,12 +1,13 @@
-from .models import Roulette, Baccarat
+from .models import Roulette, Baccarat, PartnerSetting
 from . import langs 
+from django.conf import settings
 
-# Возвращает контекст для основной страницы с статистикой
 def get_main_page_context(usr):
+    """Возвращает контекст для основной страницы с статистикой"""
     roulettes = Roulette.objects.all().order_by("roul_id")
     baccarats = Baccarat.objects.all().order_by("sort_id")
     tg_bot = ''
-    if usr.tlg_id and usr.is_pro:
+    if usr.tlg_id and usr.get_is_pro():
         tg_bot = usr.get_bot().name
     context = {
         'user': {
@@ -15,7 +16,7 @@ def get_main_page_context(usr):
             'telegram': usr.usr_telegram,
             'tlg_id': usr.tlg_id,
             'tg_bot': tg_bot,
-            'is_pro': usr.is_pro,
+            'is_pro': usr.get_is_pro(),
             'pro_time': usr.pro_time
         },
         'roulettes': [
@@ -53,5 +54,49 @@ def get_main_page_context(usr):
         'range37': range(37),
         'range11': range(1, 12),
         'range12': range(1, 13)
+    }
+    return context
+
+def get_partner_page_context(usr):
+    """Возвращает контекст для страницы партнёра"""
+    try:
+        partner_settings = usr.partnersetting
+    except PartnerSetting.DoesNotExist:
+        partner_settings = PartnerSetting(user = usr)
+        partner_settings.save()
+    promos = partner_settings.curr_promo.all().order_by("id")
+    reflinks = usr.reflink_set.all().order_by("id")
+    context = {
+        'text': langs.ru,
+        'stats': {
+            'balance_current': partner_settings.balance_current,
+            'balance_wait': partner_settings.balance_wait,
+            'balance_paid': partner_settings.balance_paid,
+            'balance_all': partner_settings.balance_current + partner_settings.balance_wait + partner_settings.balance_paid,
+            'clicks_count': partner_settings.get_clicks_count(),
+            'reg_count': partner_settings.get_reg_count()
+        },
+        'promos': [
+            {
+                'id': promo.id,
+                'value': promo.value,
+                'free_days': promo.free_days
+            }
+            for promo in promos
+        ],
+        'reflinks': [
+            {
+                'id': reflink.id,
+                'value': reflink.value,
+                'clicks_count': reflink.get_clicks_count(),
+                'reg_count': reflink.get_reg_count(),
+                'promo_value': reflink.promo.value if reflink.promo else '',
+                'source': reflink.source,
+                'comment': reflink.comment
+            }
+            for reflink in reflinks
+
+        ],
+        'url': settings.URL
     }
     return context

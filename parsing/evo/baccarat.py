@@ -37,7 +37,7 @@ BACCARAT_NAMES = {
 }
 
 def get_evo_id():
-    return requests.get("http://5.231.220.43:5000/evo_id").text
+    return requests.get("http://81.177.143.130:5000/evo_id").text
 
 def get_game_state(values):
     msg=""

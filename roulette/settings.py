@@ -26,7 +26,7 @@ SECRET_KEY = '0h=8x925^py1nn3pd5w$*b3f@p2!v8&u0%$8bn9fr%#t4(#d7@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["5.231.220.43","localhost"]
+ALLOWED_HOSTS = ["*"]
 # 94.249.192.189
 
 # Application definition
@@ -78,9 +78,9 @@ WSGI_APPLICATION = 'roulette.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'roulette',
-        'USER': 'roul',
-        'PASSWORD': 'As3Vdsd898',
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
         'HOST': 'postgresdb',
         'PORT': '5432'
     },
@@ -131,3 +131,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 # Celery Configuration Options
 CELERY_BROKER_URL = 'redis://localhost'
+
+URL = os.environ.get('URL')

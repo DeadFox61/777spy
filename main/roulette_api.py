@@ -43,7 +43,7 @@ def get_stats(user):
         }
 
 def get_choosen(usr):
-    data = {"user": {"is_pro": usr.is_pro}, "roulettes": []}
+    data = {"user": {"is_pro": usr.get_is_pro()}, "roulettes": []}
     selected_rouls = list(usr.usersetting.curr_roulettes.all())
     roulettes = Roulette.objects.all().order_by("roul_id")
     for roulette in roulettes:
@@ -62,7 +62,7 @@ def change_choise(usr,roul_id):
     if roul in usr.usersetting.curr_roulettes.all():
         usr.usersetting.curr_roulettes.remove(roul)
     else:
-        if not usr.is_pro and usr.usersetting.curr_roulettes.count() >= gl_st.free_rouls_available:
+        if not usr.get_is_pro() and usr.usersetting.curr_roulettes.count() >= gl_st.free_rouls_available:
             return {"status":"err","min_val":gl_st.free_rouls_available}
         usr.usersetting.curr_roulettes.add(roul)
     return {"status":"ok"}
@@ -84,7 +84,7 @@ def change_zero(usr,zr_name):
 def add_rule(usr, name, is_in_row, rule_type, count, color):
     """Создаёт и добавляет правило в БД"""
     gl_st = GlobalSetting.objects.get(version = 1000)
-    if not usr.is_pro and usr.rule_set.count() >= gl_st.free_rules_available:
+    if not usr.get_is_pro() and usr.rule_set.count() >= gl_st.free_rules_available:
         return {"status": "err","min_val":gl_st.free_rules_available}
     rule = Rule(
         name=name,
@@ -138,7 +138,7 @@ def change_tg(usr,rule_id,is_on):
     rule_type = rule.rule_type
     how_many_in_row = rule.how_many_in_row
     gl_st = GlobalSetting.objects.get(version = 1000)
-    if not usr.is_pro:
+    if not usr.get_is_pro():
         rule.is_tg_on = False
         TlgMsg.objects.filter(rule=rule).delete()
         rule.save()

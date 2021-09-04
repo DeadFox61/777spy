@@ -33,7 +33,7 @@ def get_stats(user):
 
 def get_choosen(usr):
     """Возвращает список выбранных баккар"""
-    data = {"user": {"is_pro": usr.is_pro}, "baccarats": {"Evolution":[],"Ezugi":[]}}
+    data = {"user": {"is_pro": usr.get_is_pro()}, "baccarats": {"Evolution":[],"Ezugi":[]}}
     selected_baccs = list(usr.usersetting.curr_baccarats.all())
     baccarats = Baccarat.objects.all().order_by("sort_id")
     for baccarat in baccarats:
@@ -53,7 +53,7 @@ def change_choise(usr,bacc_id):
     if bacc in usr.usersetting.curr_baccarats.all():
         usr.usersetting.curr_baccarats.remove(bacc)
     else:
-        if not usr.is_pro and usr.usersetting.curr_baccarats.count() >= gl_st.free_rouls_available:
+        if not usr.get_is_pro() and usr.usersetting.curr_baccarats.count() >= gl_st.free_rouls_available:
             return {"status":"err","min_val":gl_st.free_rouls_available}
         usr.usersetting.curr_baccarats.add(bacc)
     return {"status":"ok"}
@@ -62,7 +62,7 @@ def change_choise(usr,bacc_id):
 def add_rule(usr,name,rule_type,count,color):
     """Создаёт и добавляет правило в БД"""
     gl_st = GlobalSetting.objects.get(version = 1000)
-    if not usr.is_pro and usr.rule_set.count() >= gl_st.free_rules_available:
+    if not usr.get_is_pro() and usr.rule_set.count() >= gl_st.free_rules_available:
         return {"status": "err","min_val":gl_st.free_rules_available}
     rule = BaccRule(
         name=name,
@@ -113,7 +113,7 @@ def change_tg(usr,rule_id,is_on):
     rule_type = rule.rule_type
     count = rule.count
     gl_st = GlobalSetting.objects.get(version = 1000)
-    if not usr.is_pro:
+    if not usr.get_is_pro():
         rule.is_tg_on = False
         TlgMsgBacc.objects.filter(rule=rule).delete()
         rule.save()

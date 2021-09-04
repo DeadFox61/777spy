@@ -1265,6 +1265,7 @@ function info_open(t,r) {
 
 }
 
+
 function menu_quit() {
     $.ajax ({ 
         url: "ajax", 

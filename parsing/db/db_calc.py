@@ -5,10 +5,29 @@ import json
 from db import _db
 
 def get_conn():
-    return _db.get_conn()
+    return _db.get_conn(host = 'localhost')
 def get_cursor(conn):
     return _db.get_cursor(conn)
 
+# Общие
+def get_curr_rouls(setting_id):
+    conn = get_conn()
+    cursor = get_cursor(conn)
+    cursor.execute(f"""
+SELECT roulette_id
+FROM main_usersetting_curr_roulettes
+WHERE usersetting_id = {setting_id}
+""")
+    roul_ids = []
+    rows = cursor.fetchall()
+    for row in rows:
+        roul_ids.append(row['roulette_id'])
+    cursor.close()
+    conn.close()
+    roul_ids.sort()
+    return roul_ids
+
+# Статистика
 def get_curr(roul_id):
     conn = get_conn()
     cursor = get_cursor(conn)
@@ -57,24 +76,43 @@ def save_stat(roul_id,json_stat):
     cursor.close()
     conn.close()
 
-# Правила
-def get_curr_rouls(setting_id):
+# Персональная статистика
+def ind_save_stat(user_id,json_stat):
+    stat_str = json.dumps(json_stat)
     conn = get_conn()
     cursor = get_cursor(conn)
     cursor.execute(f"""
-SELECT roulette_id
-FROM main_usersetting_curr_roulettes
-WHERE usersetting_id = {setting_id}
+    UPDATE main_usersetting AS s
+    SET individual_stats = '{stat_str}'
+    FROM main_user AS u 
+    WHERE u.id = '{user_id}'
+    
 """)
-    roul_ids = []
-    rows = cursor.fetchall()
-    for row in rows:
-        roul_ids.append(row['roulette_id'])
+    conn.commit()
     cursor.close()
     conn.close()
-    roul_ids.sort()
-    return roul_ids
 
+def get_users_data():
+    conn = get_conn()
+    cursor = get_cursor(conn)
+    cursor.execute(f"""
+        SELECT u.id, s.checked_nums, s.id as setting_id
+        FROM main_usersetting AS s
+        LEFT JOIN main_user u 
+        ON s.user_id = u.id
+        WHERE true
+    """)
+    users_data = {}
+    rows = cursor.fetchall()
+    for row in rows:
+        data = {"checked_nums":row["checked_nums"]}
+        rouls_ids = get_curr_rouls(row["setting_id"])
+        users_data[row["id"]] = {'data':data,'rouls_ids':rouls_ids}
+    cursor.close()
+    conn.close()
+    return users_data
+
+# Правила
 
 def get_rules():
     rules = []

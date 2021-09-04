@@ -1,12 +1,35 @@
 version: "3"
 
 services:
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - web
+    restart: always
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+  certbot:
+    container_name: certbot
+    image: certbot/certbot
+    volumes:
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
   postgresdb:
     build:
       context: ./postgres
       dockerfile: Dockerfile
     environment:
-      - POSTGRES_PASSWORD=As3Vdsd898
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
     volumes:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./postgres/pgdata:/var/lib/postgresql/data
@@ -18,10 +41,17 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./:/usr/src/app
+    environment:
+      - URL
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - DEBUG
     depends_on:
       - postgresdb
     ports:
       - "8000:8000"
+
   parse_ezugi_roulette:
     build:
       context: ./parsing
