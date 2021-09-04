@@ -14,3 +14,8 @@ postgres/pgdata
 parsing/sess_id.txt
 dump.sql
 init-letsencrypt.sh
+main/migrations/
+nginx/certbot/
+
+# logs
+logs/

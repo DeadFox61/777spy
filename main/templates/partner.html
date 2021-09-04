@@ -1,0 +1,248 @@
+{% extends "base_generic.html" %}
+
+{% load static %}
+
+{% block script %}
+<script src="{% static 'partner.js' %}" ></script>
+{% endblock %}
+
+{% block content %}
+
+
+
+<div class="user_width tab_box mt_40">
+    <div class="cont cont_111 cont_hor cont_nowrap">
+        <div class="tab_button tab_button_active tab_button_1 max" onclick="tab(1)">Статистика</div>
+        <div class="tab_button_separator"></div>
+        <div class="tab_button tab_button_4 max" onclick="tab(4)">Выплаты</div>
+        <div class="tab_button_separator"></div>
+        <div class="tab_button tab_button_3 max" onclick="tab(3)">Реф.ссылки</div>
+        <div class="tab_button_separator"></div>
+        <div class="tab_button tab_button_2 max" onclick="tab(2)">Промо</div>
+    </div>
+    <div class="tab tab_1">
+        <div class="cont cont_111 cont_nowrap cont_hor">
+            <div class="line_border max bg_white">
+                <div class="title">{{stats.clicks_count}}</div>
+                <div class="text tac mb_20 fs_16">Клики</div>
+            </div>                       
+            <div class="line_border max ml_20 bg_white">
+                <div class="title">{{stats.reg_count}}</div>
+                <div class="text tac mb_20 fs_16">Регистрация</div>
+            </div>  
+            <div class="line_border max ml_20 bg_white">
+                <div class="title">{{stats.balance_all}}</div>
+                <div class="text tac mb_20 fs_16">Начисления</div>
+            </div>
+        </div>
+    </div>
+    <div class="tab tab_4 display_none">
+        <div class="cont cont_111 cont_nowrap cont_hor">
+            <div class="line_border max bg_white">
+                <div class="title">{{stats.balance_current}}</div>
+                <div class="text tac mb_20 fs_16">На счету</div>
+            </div>                       
+            <div class="line_border max ml_20 bg_white">
+                <div class="title">{{stats.balance_all}}</div>
+                <div class="text tac mb_20 fs_16">За все время</div>
+            </div>  
+        </div>
+        <!-- Выплаты -->
+        <!-- $paid_0 = mysqli_fetch_row(mysqli_query($CONNECT, "SELECT COUNT(1) FROM partner WHERE user_id = $user_id AND paid = 0")); 
+        $paid_other = mysqli_fetch_row(mysqli_query($CONNECT, "SELECT COUNT(1) FROM partner WHERE user_id = $user_id AND paid > 0")); 
+        if ($paid_other[0] OR $paid_0[0]) {
+            echo '
+            <div class="cont cont_111 cont_nowrap cont_hor mt_20">';
+                if ($paid_0[0]) {echo '<div class="line_button fs_13" onclick="partner_paid_now()">'.mb_strtoupper($text[partner][tab_4][3], 'UTF-8').'</div> ';}//ЗАКАЗАТЬ ВЫПЛАТУ
+                echo '<div class="max"></div>';
+                if ($paid_other[0]) {echo '<div class="line_button ml_20 fs_13" onclick="partner_paid_more()">'.mb_strtoupper($text[partner][tab_4][4], 'UTF-8').'</div>';} //ВЫПЛАТЫ
+            </div>
+            <div class="display_none " id="partner_paid_now">
+                <div class="cont cont_111 cont_nowrap cont_hor line mt_20">
+                    <div class="line_title">'.$text[partner][tab_4][5].':</div>
+                    <div class="line_separator"></div>
+                    <input type="text" class="line_input max" placeholder="" value="'.$user_money[paid_no].'" id="partner_paid_now_sum">
+                </div>';
+                $partner_score_count = mysqli_fetch_row(mysqli_query($CONNECT, "SELECT COUNT(1) FROM partner_score WHERE user_id = '$user_id'")); 
+                if ($partner_score_count[0]) {
+                    echo  '                        
+                    <div class="cont cont_111 cont_nowrap cont_hor line mt_20">
+                        <div class="line_title">'.$text[partner][tab_4][6].':</div>
+                        <div class="line_separator"></div>
+                        <select id="partner_paid_now_select" class="line_input max" >';
+                            $sql_score = mysqli_query($CONNECT, "SELECT * FROM partner_score WHERE user_id = '$user_id' ORDER BY data_last_paid DESC");
+                            while($row_score = mysqli_fetch_assoc($sql_score) ){
+                                if ($row_score[type] == 1) {$score_type = $text[partner][tab_4][7];}
+                                else if ($row_score[type] == 2) {$score_type = $text[partner][tab_4][8];}
+                                echo '<option value="'.$row_score[id].'" class="line_option">'.$score_type.': '.srore_hide($row_score[score], $row_score[type]).'</option>';
+                            }
+                        echo '
+                            <option value="0" class="line_option">'.$text[partner][tab_4][9].'</option>
+                        </select>
+                        <div class="line_button fs_11" onclick="partner_paid_score_del()" id="partner_paid_button_del">'.mb_strtoupper($text[partner][tab_4][10], 'UTF-8').'</div>
+                    </div>';
+                    $css_partner_paid_now_new = ' display_none ';
+                }
+                echo  '                        
+                <div class="mt_20 '.$css_partner_paid_now_new.'" id="partner_paid_now_new">
+                    <div class="cont cont_111 cont_nowrap cont_hor line">
+                        <div class="line_title">'.$text[partner][tab_4][11].':</div>
+                        <div class="line_separator"></div>
+                        <select id="partner_paid_now_type" class="line_input max" >
+                            <option value="1" class="line_option">'.$text[partner][tab_4][7].' ('.$text[partner][tab_4][12].' 3,5%)</option>
+                            <option value="2" class="line_option">'.$text[partner][tab_4][8].' ('.$text[partner][tab_4][12].' 2%)</option>
+                        </select>
+                        <div class="line_separator"></div>
+                        <div class="line_title">'.$text[partner][tab_4][13].':</div>
+                        <div class="line_separator"></div>
+                        <input type="text" class="line_input max" placeholder="" id="partner_paid_now_number">
+                    </div>
+                </div>';
+                if (!$user[phone]) {
+                    echo  '              
+                    <div class="cont cont_111 cont_nowrap cont_hor line mt_20" id="partner_paid_phone">
+                        <div class="line_title">'.$text[phone].':</div>
+                        <div class="line_separator"></div>
+                        <input type="text" class="line_input max" placeholder="'.$text[partner][tab_4][14].'" id="partner_user_phone">
+                    </div>';
+                }
+                echo '
+                <div class="cont cont_001 cont_nowrap cont_hor mt_20">
+                    <div class="line_button fs_13" onclick="partner_paid_button_paid()">'.mb_strtoupper($text[partner][tab_4][15], 'UTF-8').'</div>
+                    <div class="line_button fs_13 ml_20 bg_red" onclick="partner_paid_button_cancel()">'.mb_strtoupper($text[cancel], 'UTF-8').'</div>
+                </div>
+            </div>
+            <div class="display_none" id="partner_paid_more">';
+                echo '
+                    <div class="cont cont_111 cont_nowrap cont_hor ">
+                        <div class="line_p width_18">'.$text[date].'</div>
+                        <div class="line_p max tar">'.$text[partner][tab_4][16].'</div>
+                    </div>';
+                    $sql = mysqli_query($CONNECT, "SELECT * FROM partner WHERE user_id = $user_id AND paid > 0 ORDER BY paid ASC, paid_date DESC, id DESC");
+                    while($row = mysqli_fetch_assoc($sql) ){
+                        echo '
+                        <div class="cont cont_111 cont_nowrap cont_hor mb_10 line">
+                            <div class="line_title width_18">';
+                                if ($row[paid] == 2) {echo $row[paid_date];}
+                                else if ($row[paid] == 1) {echo $text[partner][tab_4][17];}
+                            echo '
+                            </div>
+                            <div class="line_separator"></div>
+                            <div class="line_text max tar">'.$row[money].'</div>
+                        </div>';
+                    }                                
+            echo '
+            </div>';
+        } -->
+    </div>
+
+    <!-- Промо -->
+    <div class="tab tab_2 display_none">
+        {% for promo in promos %}
+            <div class="line cont cont_111 cont_nowrap cont_hor mt_20">
+                <div class="line_title">Промо: {{promo.value}}</div>
+                <div class="u_line_text max fs_14">+{{promo.free_days}} дней(я) при регистрации</div>
+                <div class="line_separator"></div>
+                <!-- <div class="u_line_text fs_14">Дейстивтелен до {{'.$prom[date].'}}</div> -->
+            </div>
+
+        {% empty %}
+            <div class="tab_p tac">У вас нет действующих промо</div>
+        {% endfor  %}
+    </div>
+
+    <div class="tab tab_3 display_none">
+        {% for reflink in reflinks %}
+            <div class="line_box mt_40" id="partner_ref_{{reflink.value}}">
+                <div class=" cont cont_111 cont_nowrap cont_hor line_box_title pt_20_pl_20">
+                    <div class="u_clear">Реферальная ссылка:</div>
+                    <div class="u_clear tar max">{{url}}?refid={{reflink.value}}</div>
+                </div>
+                <div class="padding_20">
+                    <div class=" cont cont_111 cont_nowrap cont_hor">
+                        <div class="line_p max partner_ref_edit_hide_{{reflink.value}}">Клики: {{reflink.clicks_count}}</div>
+                        <div class="line_p max partner_ref_edit_hide_{{reflink.value}}">Регистрация: {{reflink.reg_count}}</div>                         
+                        <div class="line_p ">Промо: </div>  
+                        <span class="line_p p_0 max partner_ref_edit_hide_{{reflink.value}} " id="partner_ref_edit_promo_text_{{reflink.value}}">{{reflink.promo_value}}</span>
+                        <select class="line_border line_input max partner_ref_edit_show partner_ref_edit_show_{{reflink.value}}"  id="partner_ref_edit_promo_{{reflink.value}}">
+                            <option selected value="0"></option>
+                            {% for promo in promos %}
+                                <option value="{{promo.id}}">{{promo.value}}</option>
+                            {% endfor %}   
+                        </select>
+                        <!-- кнопки -->
+                        <div class="line_i pt_10_pl_10 bg_green cursor color_white partner_ref_edit_hide_{{reflink.value}}" onclick="partner_ref_edit('{{reflink.value}}')"><i class="fa fa-pencil"></i></div>
+                        {% if reflink.clicks_count or reflink.reg_count%}
+                        <!-- <div class="line_i pt_10_pl_10 bg_green cursor color_white ml_10 partner_ref_edit_hide_{{reflink.value}}" onclick="partner_ref_more('{{reflink.value}}')"><i class="fa fa-angle-double-down"></i></div> -->
+                        {% else %}
+                            <div class="line_i pt_10_pl_10 bg_red cursor color_white ml_10 partner_ref_edit_hide_{{reflink.value}}" onclick="del_ref_link('{{reflink.value}}')"><i class="fa fa-trash-o"></i></div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class=" mt_10 {% if reflink.source %} source_show {% else %} display_none {% endif %} partner_ref_edit_hide_{{reflink.value}}_source">
+                        <div class="cont cont_111 cont_nowrap cont_hor">
+                            <div class="line_p">Источник:</div>
+                            <div class="line_p p_0 max partner_ref_edit_hide_{{reflink.value}}" id="partner_ref_edit_source_text_{{reflink.value}}">{{reflink.source}}</div>                                    
+                        </div>                            
+                    </div>
+                    <div class="mt_10 partner_ref_edit_show partner_ref_edit_show_{{reflink.value}}">
+                        <div class="cont cont_111 cont_nowrap cont_hor">
+                            <div class="line_p">Источник:</div>
+                            <input type="text" class="line_input line_border max partner_ref_edit_show partner_ref_edit_show_{{reflink.value}}" value="{{reflink.source}}" id="partner_ref_edit_source_{{reflink.value}}">
+                        </div>
+                    </div>
+
+                    <div class=" mt_10 {% if reflink.comment %} comment_show {% else %} display_none {% endif %} partner_ref_edit_hide_{{reflink.value}}_comment">
+                        <div class="cont cont_111 cont_nowrap cont_hor">
+                            <div class="line_p">Комментарий:</div>
+                            <div class="line_p p_0 max partner_ref_edit_hide_{{reflink.value}}" id="partner_ref_edit_comment_text_{{reflink.value}}">{{reflink.comment}}</div>                                    
+                        </div>                            
+                    </div>
+                    <div class="mt_10 partner_ref_edit_show partner_ref_edit_show_{{reflink.value}}">
+                        <div class="cont cont_111 cont_nowrap cont_hor">
+                            <div class="line_p">Комментарий:</div>
+                            <input type="text" class="line_input line_border max partner_ref_edit_show partner_ref_edit_show_{{reflink.value}}" value="{{reflink.comment}}" id="partner_ref_edit_comment_{{reflink.value}}">
+                        </div>
+                    </div>
+                    <div class=" partner_ref_edit_show partner_ref_edit_show_{{reflink.value}} mt_10">
+                        <div class=" cont cont_001 cont_nowrap cont_hor">
+                            <div class="line_button" onclick="partner_ref_edit_save('{{reflink.value}}')">SAVE</div>
+                            <div class="line_button bg_red ml_10" onclick="partner_ref_edit_cancel('{{reflink.value}}')">ОТМЕНА</div>
+                        </div>
+                    </div>
+                    <!-- Подробная информация о действиях по ссылке -->
+                    <!-- <div class="partner_ref_more display_none fs_13 mt_10 " id="partner_ref_more_{{reflink.value}}">
+                        <div class="tab_hr mb_10"></div>';
+                        $sql2 = mysqli_query($CONNECT, "SELECT * FROM refid WHERE refid = '$row[link]' ORDER BY active DESC, date DESC");
+                        while($row2 = mysqli_fetch_assoc($sql2) ){
+                            if ($row2[active]) {
+                                $xxff = mysqli_fetch_assoc(mysqli_query($CONNECT, "SELECT * FROM user WHERE id = '$row2[user]'"));                                 
+                                echo '
+                                <div class=" cont cont_100 cont_nowrap cont_hor mt_m10 ">
+                                    <div class="line_p width_15">'.$text[reg].'</div>
+                                    <div class="line_p width_15">'.$row2[date].'</div>
+                                    <div class="line_p width_20">Ip: '.$row2[ip].'</div>
+                                    <div class="line_p width_20"><span class="line_span fs_12">'.$text[mail].': </span> '.hidestring($xxff[login]).'</div>
+                                </div>';                            
+                            } else {
+                                echo '
+                                <div class=" cont cont_100 cont_nowrap cont_hor mt_m10 ">
+                                    <div class="line_p width_15">'.$text[partner][tab_3][4].'</div>
+                                    <div class="line_p width_15">'.$row2[date].'</div>
+                                    <div class="line_p width_20">Ip: '.$row2[ip].'</div>
+                                </div>'; 
+                            }
+                        }   
+                    </div> -->
+                </div>
+            </div>          
+        {% endfor  %}       
+        <div class="cont cont_001 cont_nowrap cont_hor mt_20">
+            <div class="u_button" onclick="add_new_ref_link()">Создать новую реферальную ссылку</div>
+        </div>
+        
+    </div>
+
+</div>
+
+{% endblock %}
