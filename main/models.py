@@ -210,9 +210,9 @@ class UserSetting(models.Model):
             "alt_dozen_column": 0
         }
     )
-    checked_nums = models.JSONField(default=[])
+    checked_nums = models.JSONField(default=[], blank=True)
     show_nums_count = models.IntegerField(default=100)
-    individual_stats = models.JSONField(default={})
+    individual_stats = models.JSONField(default={}, blank=True)
 
     def __str__(self):
         return f"{self.user.login} settings"
