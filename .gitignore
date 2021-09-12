@@ -15,6 +15,7 @@ parsing/sess_id.txt
 dump.sql
 init-letsencrypt.sh
 nginx/certbot/
+init_data/
 
 # logs
 logs/
