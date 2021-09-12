@@ -272,7 +272,8 @@ function update_stats(){
                     gg = 'e' + g;
                     write_if_not_writen('#row_no_'+stat.roul_id+'_'+gg,stat.stats.number.data[g].inverse,rules_data,10,false);
                 }
-                write_if_not_writen('#row_no_'+stat.roul_id+'_fav',stat.ind_stats.fav_num,rules_data,10,false);  
+                if(stat.ind_stats)
+                    write_if_not_writen('#row_no_'+stat.roul_id+'_fav',stat.ind_stats.fav_num,rules_data,10,false);  
                 
             }
             line_color();
