@@ -153,6 +153,11 @@ def change_tg(request):
     is_on = bool(int(request.POST['param']))
     return JsonResponse(roulette_api.change_tg(usr,rule_id,is_on))
 
+def change_fav_num(request):
+    usr = request.user
+    num = int(request.POST['num'])
+    return JsonResponse(roulette_api.change_fav_num(usr,num))
+
 # ajax-ы баккарат
 def get_stats_bacc(request):
     if request.user.is_anonymous:

@@ -52,7 +52,6 @@ class BaccaratAdmin(admin.ModelAdmin):
 class NumberModelAdmin(admin.ModelAdmin):
     list_display = ('roulette', 'num',)
     list_filter = (
-        'is_new',
         ('roulette', admin.RelatedOnlyFieldListFilter),
     )
 

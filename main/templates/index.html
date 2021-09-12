@@ -94,6 +94,26 @@
                     <div id="menu_check" class="display_none"></div>
                 </div>
                 
+                <div class="menu_block mb_20">
+                    <p class="menu_check_title" onclick="menu_block_on('menu_fav_nums')">Любимые числа</p>            
+                    <div id="menu_fav_nums" class="display_none">
+                        {% for i in range37 %}
+                            {% if i in user.fav_nums%}
+                                <div class="cont cont_111 cont_hor cont_nowrap menu_check_line cursor" onclick="menu_fav_num_switch('{{i}}')">
+                                    <i class="fa fa-check menu_check_ico menu_num_table_ico_{{i}}"></i>
+                                    <p class="max menu_check_line_p cursor">{{i}}</p>
+                                </div>
+                            {% else %}
+                                <div class="cont cont_111 cont_hor cont_nowrap menu_check_line cursor menu_check_line_off" onclick="menu_fav_num_switch('{{i}}')">
+                                    <i class="fa fa-times menu_check_ico menu_num_table_ico_{{i}}"></i>
+                                    <p class="max menu_check_line_p cursor">{{i}}</p>
+                                </div>
+                            {% endif %}
+                            
+                        {% endfor %}
+                    </div>
+                </div>
+
                 <!-- Добавление правила -->
                 <div class="menu_button_open " onclick="menu_add()">{{text.menu.rule.1|upper}}</div>
 
@@ -175,7 +195,7 @@
 
         <div class="max cont cont_100 cont_nowrap cont_vert cont_y_010">
             <div class="width cont cont_100 cont_nowrap cont_vert cont_y_100">  
-                <div class="date_time bg_white">tst</div>
+                <div class="date_time bg_white">tsta</div>
                 <!-- Таблица Эволюшн -->
                 <div id="date_time"></div>
                 <div class="table mt_20" id="table_on">
@@ -395,6 +415,7 @@
 							{% for i in range37 %}
 							    <div class="col_2 col_3  show_8 {% if i == 0 %} col_5 {% else %} {% endif %}" onclick="hide(8)">{{i}}</div>
 							{% endfor %}
+                            <div class="col_2 col_3  show_8 " onclick="hide(8)">fav</div>
                             <div class="col_9 hide_8" onclick="show(8)"><i class="fa fa-chevron-right"></i></div>
                         </div>
                     </div>
@@ -437,7 +458,7 @@
                                     {% for i in range37 %}
                                         <div class="col_2 col_3  show_8 {% if i == 0 %} col_5 {% else %} {% endif %}" onclick="hide(8)">{{i}}</div>
                                     {% endfor %}
-
+                                    <div class="col_2 col_3  show_8 " onclick="hide(8)">fav</div>
                                     <div class="col_9 hide_8" onclick="show(8)"><i class="fa fa-chevron-right"></i></div>
                                 </div>
                             </div>
@@ -472,6 +493,7 @@
                                 {% for i in range37 %}
                                     <div class=" col_2 col_3  {% if i == 0 %} col_5 {% else %} {% endif %} show_8" id="row_no_{{roul.id}}_e{{i}}"></div>
                                 {% endfor %} 
+                                <div class=" col_2 col_3  show_8" id="row_no_{{roul.id}}_fav"></div>
                                 <div class="col_9 hide_8" onclick="show(8)"></div>
                             
                             </div><div class="col_44 max"></div>

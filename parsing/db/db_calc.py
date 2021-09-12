@@ -5,7 +5,7 @@ import json
 from db import _db
 
 def get_conn():
-    return _db.get_conn(host = 'localhost')
+    return _db.get_conn()
 def get_cursor(conn):
     return _db.get_cursor(conn)
 
@@ -14,14 +14,15 @@ def get_curr_rouls(setting_id):
     conn = get_conn()
     cursor = get_cursor(conn)
     cursor.execute(f"""
-SELECT roulette_id
-FROM main_usersetting_curr_roulettes
+SELECT r.roul_id
+FROM main_roulette r
+LEFT JOIN main_usersetting_curr_roulettes sr ON sr.roulette_id = r.id
 WHERE usersetting_id = {setting_id}
 """)
     roul_ids = []
     rows = cursor.fetchall()
     for row in rows:
-        roul_ids.append(row['roulette_id'])
+        roul_ids.append(row['roul_id'])
     cursor.close()
     conn.close()
     roul_ids.sort()
@@ -85,7 +86,7 @@ def ind_save_stat(user_id,json_stat):
     UPDATE main_usersetting AS s
     SET individual_stats = '{stat_str}'
     FROM main_user AS u 
-    WHERE u.id = '{user_id}'
+    WHERE s.user_id = '{user_id}'
     
 """)
     conn.commit()

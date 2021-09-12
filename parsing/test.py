@@ -15,4 +15,3 @@ from db import db_calc as db
 # print(db.get_users_data())
 
 ind_stats = IndRoulStats()
-ind_stats.load_data()

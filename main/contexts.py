@@ -17,7 +17,8 @@ def get_main_page_context(usr):
             'tlg_id': usr.tlg_id,
             'tg_bot': tg_bot,
             'is_pro': usr.get_is_pro(),
-            'pro_time': usr.pro_time
+            'pro_time': usr.pro_time,
+            'fav_nums': usr.usersetting.checked_nums
         },
         'roulettes': [
             {
@@ -97,6 +98,6 @@ def get_partner_page_context(usr):
             for reflink in reflinks
 
         ],
-        'url': settings.URL
+        'url': 'https://'+settings.URL
     }
     return context

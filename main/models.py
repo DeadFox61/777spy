@@ -52,7 +52,7 @@ class Roulette(models.Model):
 class Number(models.Model):
     roulette = models.ForeignKey(Roulette, on_delete=models.CASCADE)
     num = models.IntegerField()
-    is_new = models.BooleanField(default=True)
+    
     def __str__(self):
         return f"({self.roulette.roul_id}){self.num}"
 

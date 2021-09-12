@@ -21,13 +21,13 @@ AUTH_USER_MODEL = 'main.User'
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '0h=8x925^py1nn3pd5w$*b3f@p2!v8&u0%$8bn9fr%#t4(#d7@'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+
+DEBUG = os.environ.get('DEBUG') == '1'
 
 ALLOWED_HOSTS = ["*"]
-# 94.249.192.189
 
 # Application definition
 
@@ -132,4 +132,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 # Celery Configuration Options
 CELERY_BROKER_URL = 'redis://localhost'
 
+# Custom
 URL = os.environ.get('URL')

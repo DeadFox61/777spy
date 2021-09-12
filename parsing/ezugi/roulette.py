@@ -81,12 +81,6 @@ def on_message(ws, message):
             stats.add(key,int(number))
             datas.append(data)
     db.proc_datas(datas)
-                
-def on_error(ws, error):
-    logger.error(error)
-
-def on_close(ws):
-    logger.debug("### closed ###")
 
 def on_open(ws):
     ws.send('{"MessageType":"LobbyInitializeDataByHome","ClientIP":"5.231.220.43,"ClientId":"10424001|4446531_RUB|lobby","GameID":0,"Language":"ru","Nickid":"deadfox61","currentPlayerToken":"b97243ff-1bfa-46a0-967a-a983342882f4","OperatorID":10424001,"SessionCurrency":"RUB","UID":"4446531_RUB","clientType":"html"}')
@@ -97,9 +91,7 @@ stats = roul_stats.RoulsStats()
 stats.init_rouls()
 ws = websocket.WebSocketApp("wss://engine.livetables.io/GameServer/lobby",
                               on_open = on_open,
-                              on_message = on_message,
-                              on_error = on_error,
-                              on_close = on_close)
+                              on_message = on_message)
 def parse_ezugi():
     while True:
         try:

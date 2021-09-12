@@ -27,5 +27,6 @@ urlpatterns = [
     path('del_rule_bacc', views.del_rule_bacc, name='del_rule_bacc'),
     path('get_clean_rule_bacc', views.get_rule_bacc, name='get_rule_bacc'),
     path('get_stats_bacc', views.get_stats_bacc, name='get_stats_bacc'),
-    path('partner_ajax', views.partner_ajax, name='partner_ajax')
+    path('partner_ajax', views.partner_ajax, name='partner_ajax'),
+    path('change_fav_num',views.change_fav_num, name='change_fav_num')
 ]

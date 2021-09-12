@@ -271,7 +271,8 @@ function update_stats(){
                 for(var g = 0; g <= 36; g++){
                     gg = 'e' + g;
                     write_if_not_writen('#row_no_'+stat.roul_id+'_'+gg,stat.stats.number.data[g].inverse,rules_data,10,false);
-                }  
+                }
+                write_if_not_writen('#row_no_'+stat.roul_id+'_fav',stat.ind_stats.fav_num,rules_data,10,false);  
                 
             }
             line_color();
@@ -293,6 +294,7 @@ function menu_block_on(id) {
     $('#'+id).slideToggle();
     if (id == 'menu_table') {menu_table_show();}
     if (id == 'menu_check') {menu_zero_show();}
+    if (id == 'menu_bacc') {menu_bacc_show();}
     if (id == 'menu_bacc') {menu_bacc_show();}
     
 }
@@ -412,6 +414,31 @@ function menu_table_switch(param) {
         }        
     });
 }
+
+//МЕНЮ изменить любимые числа
+function menu_fav_num_switch(param){
+    turned_on = $('.menu_num_table_ico_'+param).hasClass('fa-check');
+
+    $('.menu_num_table_ico_'+param).addClass('fa-spinner fa-pulse').removeClass('fa-check').removeClass('fa-times');
+    $.ajax ({ 
+        url: "change_fav_num", 
+        type: "POST",         
+        data: ({csrfmiddlewaretoken: window.CSRF_TOKEN, type: 'menu_fav_num_switch', num: param}),         
+        dataType: "json",               
+        success: function (data) {
+            $('.menu_num_table_ico_'+param).removeClass('fa-spinner').removeClass('fa-pulse');
+            if(turned_on){
+                $('.menu_num_table_ico_'+param).addClass('fa-times');
+                $('.menu_num_table_ico_'+param).parent().addClass('menu_check_line_off');
+            }
+            else{
+                $('.menu_num_table_ico_'+param).addClass('fa-check');
+                 $('.menu_num_table_ico_'+param).parent().removeClass('menu_check_line_off');
+            }
+        }        
+    });
+}
+
 function menu_zero_show(){
     text = langs();
     $.ajax ({ 

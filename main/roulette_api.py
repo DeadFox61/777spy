@@ -6,6 +6,7 @@ def get_stats(user):
     roulettes = Roulette.objects.all().order_by("roul_id")
     selected_rouls = list(user.usersetting.curr_roulettes.all())
     is_zero = user.usersetting.is_zero
+    ind_stats = user.usersetting.individual_stats
     rules = Rule.objects.filter(user=user)
     rules_data = []
     for rule in rules:
@@ -26,6 +27,7 @@ def get_stats(user):
                         for i in roulette.number_set.all().order_by("id").reverse()[:150]
                     ],
                     "stats": roulette.new_stats,
+                    "ind_stats": ind_stats.get(str(roulette.roul_id)),
                     "count": roulette.number_set.count()
                 }
             )
@@ -175,3 +177,14 @@ def change_tg(usr,rule_id,is_on):
             TlgMsg.objects.filter(rule=rule).delete()
         rule.save()
         return {"status": "ok"}
+
+def change_fav_num(usr, num):
+    """Добаляет/убирает число num в/из любимых"""
+    checked_nums = usr.usersetting.checked_nums
+    if num in checked_nums:
+        checked_nums.remove(num)
+    else:
+        checked_nums.append(num)
+    usr.usersetting.checked_nums = checked_nums
+    usr.usersetting.save()
+    return {"status":"ok"}
