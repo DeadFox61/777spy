@@ -29,6 +29,7 @@ services:
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
   postgresdb:
     image: postgres
+    container_name: postgres
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
