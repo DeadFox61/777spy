@@ -27,7 +27,7 @@ def index(request):
         return render(request, 'login.html', context)
 
 def pro(request):
-    return render(request, 'pro.html', {})
+    return render(request, 'pro.html', contexts.get_pro_page_context(request.user))
 
 def partner(request):
     if request.user.is_authenticated and request.user.is_partner:

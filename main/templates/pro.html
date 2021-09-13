@@ -1,4 +1,46 @@
 {% extends "base_generic.html" %}
 
+{% load static %}
+
+{% block script %}
+	<script src="{% static 'pro.js' %}" ></script>
+{% endblock %}
+
 {% block content %}
+    <div class="user_width mt_40">    
+        <div class="title">Получив PRO доступ вы получаете:</div>
+        <div class="width_60 mac">
+            <div class="text">Одновременное отслеживание более 30 рулеток от Ezugi и Evolution Gaming</div>
+            <div class="text">Неограниченное создание правил подсветки</div>
+            <div class="text">Телеграм уведомления.</div>
+        </div>        
+        <div class="title">Купить RPO аккаунт:</div>
+        <div class="cont cont_111 cont_nowrap cont_hor">
+            <div class="  pro cursor" id="pro_1" onclick="pro_active(1, {{price_day}}, {{order_id}})">
+                <div class="title">1 день</div>
+                <div class="text tac mb_20 fs_16">{{price_day}} рублей</div>
+            </div>         
+            <div class="  pro cursor" id="pro_2" onclick="pro_active(2, {{price_week}}, {{order_id}})">
+                <div class="title">1 неделя</div>
+                <div class="text tac mb_20 fs_16">{{price_week}} рублей</div>
+            </div>
+            <div class="  pro cursor" id="pro_3" onclick="pro_active(3, {{price_month}}, {{order_id}})">
+                <div class="title">1 месяц</div>
+                <div class="text tac mb_20 fs_16">{{price_month}} рублей</div>
+            </div>
+        </div>
+        <form method=GET action="https://www.free-kassa.ru/merchant/cash.php">
+            <input type="hidden" name="m" value="{{fk_merchant_id}}">
+            <input type="hidden" name="oa" id="sum" id="oa">
+            <input type="hidden" name="s" id="s" value="0">
+            <input type="hidden" name="o" id="desc" value="">  
+            <input type="hidden" name="us_id" value="{{user_id}}">
+            <input type="hidden" name="us_service" id="us_service" value="">   
+            <input type="hidden" name="em" value="{{user_mail}}">           
+            <div class="cont cont_001 cont_nowrap cont_hor mt_40">
+                <input type="submit" id="submit"  class="line_button line_button_no_active pro_dop" value="ОПЛАТИТЬ" disabled>
+            </div>
+        </form>
+        <div id="error"></div>
+    </div>
 {% endblock %}

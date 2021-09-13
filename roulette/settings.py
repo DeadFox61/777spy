@@ -134,3 +134,8 @@ CELERY_BROKER_URL = 'redis://localhost'
 
 # Custom
 URL = os.environ.get('URL')
+
+# Pays
+PAY_ID = os.environ.get('PAY_ID')
+PAY_SECRET1 = os.environ.get('PAY_SECRET1')
+PAY_SECRET2 = os.environ.get('PAY_SECRET2')

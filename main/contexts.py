@@ -101,3 +101,17 @@ def get_partner_page_context(usr):
         'url': 'https://'+settings.URL
     }
     return context
+
+def get_pro_page_context(usr):
+    """Возвращает контекст для страницы оплаты"""
+    context = {
+        'user_id': usr.id,
+        'user_mail': usr.login,
+        'price_day': 1000,
+        'price_week': 5000,
+        'price_month': 15000,
+        'order_id': usr.id,
+        'fk_merchant_id': settings.PAY_ID,
+
+    }
+    return context

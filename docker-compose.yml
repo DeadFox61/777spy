@@ -50,6 +50,9 @@ services:
       - POSTGRES_DB
       - DEBUG
       - SECRET_KEY
+      - PAY_ID
+      - PAY_SECRET1
+      - PAY_SECRET2
     depends_on:
       - postgresdb
     ports:
