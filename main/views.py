@@ -134,7 +134,7 @@ def add_rule(request):
     rule_type = int(request.POST['col'])
     count = int(request.POST['count'])
     color = int(request.POST['color'])
-    return JsonResponse(roulette_api.add_rule(usr,name,rule_type,count,color))
+    return JsonResponse(roulette_api.add_rule(usr,name,is_in_row,rule_type,count,color))
 
 def get_rules(request):
     return JsonResponse(roulette_api.get_rules(request.user))
