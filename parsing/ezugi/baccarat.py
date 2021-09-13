@@ -1,6 +1,7 @@
 import websocket
 import json
 import time
+from loguru import logger
 
 from db import db_main as db
 from utils.rules_bacc import Rules
@@ -66,15 +67,8 @@ def on_message(ws, message):
         if json_data["MessageType"] == "UPDATED_LOBBY_DATA":
             if json_data["subMessageType"] == "UPDATED_TABLE_HISTORY":
                 if json_data["gameType"] in ["2", "27", "20","21","24","25"]:
-                    print()
                     table_id = json_data["tableId"]
-                    if table_id in BACCARAT_NAMES:
-                        print(BACCARAT_NAMES[table_id])
-                    else:
-                        print(json_data["tableId"])
-                        print(json_data)
                     game_state = get_game_state(json_data["History"])
-                    print(game_state)
                     stats = get_stats(game_state)
 
                     rules = Rules()
@@ -84,16 +78,11 @@ def on_message(ws, message):
                     db.update_bacca(table_id,game_state,stats)
             
     except Exception as e:
-        print(e)
+        pass
 
 
 
-               
-def on_error(ws, error):
-    print(error)
 
-def on_close(ws):
-    print("### closed ###")
 
 def on_open(ws):
     ws.send('{"MessageType":"LobbyInitializeDataByHome","ClientIP":"5.231.220.43","ClientId":"5555|1111_RUB|lobby","GameID":0,"Language":"ru","Nickid":"deadfox65","currentPlayerToken":"alalaa","OperatorID":5555,"SessionCurrency":"RUB","UID":"1111_RUB","clientType":"html"}')
@@ -101,12 +90,10 @@ def on_open(ws):
 # websocket.enableTrace(True)
 ws = websocket.WebSocketApp("wss://engine.livetables.io/GameServer/lobby",
                               on_open = on_open,
-                              on_message = on_message,
-                              on_error = on_error,
-                              on_close = on_close)
+                              on_message = on_message)
 def parse_ezugi():
     while True:
         try:
             ws.run_forever()
         except Exception as e:
-            print(e)
+            logger.error(e)

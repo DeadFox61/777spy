@@ -2,6 +2,7 @@ import websocket
 import json
 import time
 import requests
+from loguru import logger
 
 from db import db_main as db
 from utils.rules_bacc import Rules
@@ -78,11 +79,8 @@ def on_message(ws, message):
     try:
         json_data = json.loads(message)
         if json_data['type'] == 'lobby.baccaratRoadUpdated':
-            print()
             table_id = json_data["args"]["tableId"]
-            print(table_id)
             game_state = get_game_state(json_data["args"]["bigRoad"])
-            print(game_state)
             stats = get_stats(game_state)
 
             rules = Rules()
@@ -92,16 +90,7 @@ def on_message(ws, message):
             db.update_bacca(table_id,game_state,stats)
             
     except Exception as e:
-        print(e)
-
-
-
-               
-def on_error(ws, error):
-    print(error)
-
-def on_close(ws):
-    print("### closed ###")
+        logger.error(e)
 
 def on_open(ws):
     ws.send('''{"id":"youi1kqyew1","type":"lobby.updateSubscriptions","args":{"subscribeTopics":[{"topic":"table","tables":[
@@ -141,9 +130,7 @@ def start_socket():
     evo_id = get_evo_id()
     ws = websocket.WebSocketApp(f"wss://marathonbet-com.evo-games.com/public/lobby/player/socket?messageFormat=json&EVOSESSIONID={evo_id}&client_version=6.20210406.71854.5551-09fabd4f4a",
                               on_open = on_open,
-                              on_message = on_message,
-                              on_error = on_error,
-                              on_close = on_close)
+                              on_message = on_message)
 
     ws.run_forever()
 
@@ -153,4 +140,4 @@ def parse_evo():
         try:
             start_socket()
         except Exception as e:
-            print(e)
+            logger.error(e)
