@@ -1,6 +1,12 @@
 from .models import Roulette, Baccarat, PartnerSetting
 from . import langs 
 from django.conf import settings
+from hashlib import md5
+
+def get_fk_sign(merchant_id, secret_word, order_id, order_amount, currency = 'RUB'):
+    sign_string = f'{merchant_id}:{order_amount}:{secret_word}:{order_id}'
+    print(sign_string)
+    return md5(sign_string.encode('utf-8')).hexdigest()
 
 def get_main_page_context(usr):
     """Возвращает контекст для основной страницы с статистикой"""
@@ -110,8 +116,18 @@ def get_pro_page_context(usr):
         'price_day': 1000,
         'price_week': 5000,
         'price_month': 15000,
-        'order_id': usr.id,
-        'fk_merchant_id': settings.PAY_ID,
+        'order_ids': {
+            '1':str(usr.id)+'_1',
+            '2':str(usr.id)+'_2',
+            '3':str(usr.id)+'_3'
+        },
+        'fk_merchant_id': settings.PAY_ID
 
     }
+    signs = {
+            '1':get_fk_sign(context["fk_merchant_id"], settings.PAY_SECRET1, context["order_ids"]["1"], context["price_day"]),
+            '2':get_fk_sign(context["fk_merchant_id"], settings.PAY_SECRET1, context["order_ids"]["2"], context["price_week"]),
+            '3':get_fk_sign(context["fk_merchant_id"], settings.PAY_SECRET1, context["order_ids"]["3"], context["price_month"])
+    }
+    context["signs"] = signs
     return context
