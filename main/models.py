@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
 from django.db.models.functions import Greatest
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from . import langs
 
@@ -222,6 +223,9 @@ class PartnerSetting(models.Model):
     balance_current = models.IntegerField(default=0)
     balance_wait = models.IntegerField(default=0)
     balance_paid = models.IntegerField(default=0)
+    percent = models.IntegerField(default=25 ,validators=[
+        MinValueValidator(0),
+        MaxValueValidator(100)])
     curr_promo = models.ManyToManyField('Promo', null=True, blank=True)
     def get_clicks_count(self):
         reflinks = self.user.reflink_set.all()
@@ -263,6 +267,14 @@ class ClickEntry(models.Model):
     ip = models.CharField(max_length=25, unique=True)
     def __str__(self):
         return f"{self.ip} click of {self.link}"
+
+class Pay(models.Model):
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    data = models.DateTimeField(default=timezone.now)
+    amount = models.IntegerField()
+    comment = models.CharField(max_length=255, blank=True)
+    def __str__(self):
+        return f'{self.data.strftime("%Y-%m-%d %H:%M:%S")}:{self.user.login} pay {self.amount} rub'
 
 class Rule(models.Model):
     name = models.CharField(max_length=50)
@@ -512,6 +524,10 @@ class ParseData(models.Model):
 
 class GlobalSetting(models.Model):
     version = models.IntegerField()
+    price_day = models.IntegerField(default = 1000)
+    price_week = models.IntegerField(default = 5000)
+    price_month = models.IntegerField(default = 15000)
+    site_msg = models.CharField(max_length=255, blank=True)
     free_rouls_available = models.IntegerField()
     free_rules_available = models.IntegerField()
     min_chances = models.IntegerField()

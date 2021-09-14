@@ -77,16 +77,17 @@ class IndRoulStats():
     """Основной класс индивидуальной статистики"""
     def __init__(self, controller):
         self.data = {}
-    def load_data(self, controller):
+        self.controller = controller
+    def load_data(self):
         self.data = {}
         users_data = db.get_users_data()
         for user_id in users_data:
-            self.data[user_id] = IndUserRoulsStats(user_id, users_data[user_id], controller)
+            self.data[user_id] = IndUserRoulsStats(user_id, users_data[user_id], self.controller)
     def check_updates(self):
         users_data = db.get_users_data()
         for user_id in users_data:
             if user_id not in self.data:
-                self.data[user_id] = IndUserRoulsStats(user_id, users_data[user_id], controller)
+                self.data[user_id] = IndUserRoulsStats(user_id, users_data[user_id], self.controller)
             else:
                 self.data[user_id].check_updates(users_data[user_id])
     def add_num(self, roul_id, num):

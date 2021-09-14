@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('pro_test156', views.pro, name='pro'),
+    path('pro', views.pro, name='pro'),
     path('partner', views.partner, name='partner'),
     path('ajax', views.ajax, name='ajax'),
     path('get_stats', views.get_stats, name='get_stats'),
@@ -28,5 +28,6 @@ urlpatterns = [
     path('get_clean_rule_bacc', views.get_rule_bacc, name='get_rule_bacc'),
     path('get_stats_bacc', views.get_stats_bacc, name='get_stats_bacc'),
     path('partner_ajax', views.partner_ajax, name='partner_ajax'),
-    path('change_fav_num',views.change_fav_num, name='change_fav_num')
+    path('change_fav_num',views.change_fav_num, name='change_fav_num'),
+    path('pay_ok',views.pay_ok, name='pay_ok')
 ]

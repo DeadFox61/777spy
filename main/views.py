@@ -4,13 +4,13 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login, logout
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
-
+from django.views.decorators.csrf import csrf_exempt
 from django.views import generic
 from django.views.decorators.gzip import gzip_page
 
 from . import langs
 from .models import Roulette, Rule, User, UserSetting, TlgMsg, TlgMsgBacc, GlobalSetting, Baccarat, BaccRule
-from . import site_auth, roulette_api, baccarat_api, contexts, partner_api
+from . import site_auth, roulette_api, baccarat_api, contexts, partner_api, pays
 
 
 def index(request):
@@ -35,6 +35,15 @@ def partner(request):
         return render(request, 'partner.html', context)
     else: 
         raise Http404()
+
+@csrf_exempt
+def pay_ok(request):
+    if request.method == 'POST':
+        usr_id = request.POST['us_id']
+        service = request.POST['us_service']
+        amount = request.POST['AMOUNT']
+        pays.make_pay(usr_id, service, amount)
+        return HttpResponse('YES')
 
 # ajax-ы
 

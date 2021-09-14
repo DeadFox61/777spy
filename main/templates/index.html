@@ -194,8 +194,10 @@
 
 
         <div class="max cont cont_100 cont_nowrap cont_vert cont_y_010">
-            <div class="width cont cont_100 cont_nowrap cont_vert cont_y_100">  
-                <div class="date_time bg_white">Ведутся тех. работы</div>
+            <div class="width cont cont_100 cont_nowrap cont_vert cont_y_100">
+                {% if site_msg %} 
+                    <div class="date_time bg_white">{{site_msg}}</div>
+                {% endif %}
                 <!-- Таблица Эволюшн -->
                 <div id="date_time"></div>
                 <div class="table mt_20" id="table_on">

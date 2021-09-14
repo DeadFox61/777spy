@@ -1,4 +1,4 @@
-from .models import Roulette, Baccarat, PartnerSetting
+from .models import Roulette, Baccarat, PartnerSetting, GlobalSetting
 from . import langs 
 from django.conf import settings
 from hashlib import md5
@@ -10,6 +10,7 @@ def get_fk_sign(merchant_id, secret_word, order_id, order_amount, currency = 'RU
 
 def get_main_page_context(usr):
     """Возвращает контекст для основной страницы с статистикой"""
+    gl_settings = GlobalSetting.objects.get(version = 1000)
     roulettes = Roulette.objects.all().order_by("roul_id")
     baccarats = Baccarat.objects.all().order_by("sort_id")
     tg_bot = ''
@@ -54,10 +55,11 @@ def get_main_page_context(usr):
             ]
         },
         'settings': {
-            'free_roul_count': 1,
-            'free_rule_count': 3
+            'free_roul_count': gl_settings.free_rouls_available,
+            'free_rule_count': gl_settings.free_rules_available
         },
         'text': langs.ru,
+        'site_msg':gl_settings.site_msg,
         'range37': range(37),
         'range11': range(1, 12),
         'range12': range(1, 13)
@@ -110,12 +112,13 @@ def get_partner_page_context(usr):
 
 def get_pro_page_context(usr):
     """Возвращает контекст для страницы оплаты"""
+    gl_settings = GlobalSetting.objects.get(version = 1000)
     context = {
         'user_id': usr.id,
         'user_mail': usr.login,
-        'price_day': 1000,
-        'price_week': 5000,
-        'price_month': 15000,
+        'price_day': gl_settings.price_day,
+        'price_week': gl_settings.price_week,
+        'price_month': gl_settings.price_month,
         'order_ids': {
             '1':str(usr.id)+'_1',
             '2':str(usr.id)+'_2',

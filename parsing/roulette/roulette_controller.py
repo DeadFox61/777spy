@@ -42,7 +42,7 @@ class RoulettesManager():
         logger.info("Loading data from db..")
         self.temp = db.get_init_data()
         self.stats.init_rouls(self.temp)
-        self.ind_stats.load_data(self)
+        self.ind_stats.load_data()
         logger.info("Data loaded")
 
     def add_numbers(self, roul_id, nums):

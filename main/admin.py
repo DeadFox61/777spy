@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.db.models import F, Func
 from django.db.models.functions import Now
 
-from .models import User, Roulette, Number, UserSetting, Rule, TlgBot, TlgMsg, TlgMsgBacc, GlobalSetting, Baccarat, ParseData, BaccRule, PartnerSetting, Promo, RefLink, ClickEntry
+from .models import User, Roulette, Number, UserSetting, Rule, TlgBot, TlgMsg, TlgMsgBacc, GlobalSetting, Baccarat, ParseData, BaccRule, PartnerSetting, Promo, RefLink, ClickEntry, Pay
 
 class UserSettingInline(admin.StackedInline):
     model = UserSetting
@@ -72,3 +72,4 @@ admin.site.register(Promo)
 admin.site.register(RefLink)
 admin.site.register(PartnerSetting)
 admin.site.register(ClickEntry)
+admin.site.register(Pay)
