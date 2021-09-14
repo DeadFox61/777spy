@@ -6,7 +6,7 @@
 *.pyc
 __pycache__
 /static/
-migrations/
+main/migrations/
 # Backup files # 
 postgres/pgdata
 
