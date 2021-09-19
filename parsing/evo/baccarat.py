@@ -3,6 +3,7 @@ import json
 import time
 import requests
 from loguru import logger
+import os
 
 from db import db_main as db
 from utils.rules_bacc import Rules
@@ -38,7 +39,7 @@ BACCARAT_NAMES = {
 }
 
 def get_evo_id():
-    return requests.get("http://81.177.143.130:5000/evo_id").text
+    return requests.get(os.environ.get('EVO_ID_URL')).text
 
 def get_game_state(values):
     msg=""

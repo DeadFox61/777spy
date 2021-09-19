@@ -10,8 +10,6 @@ services:
       - POSTGRES_DB
     volumes:
       - ./postgres/pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
   web:
     container_name: web
     build:
@@ -45,5 +43,6 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - POSTGRES_DB
+      - EVO_ID_URL
     depends_on:
       - postgresdb

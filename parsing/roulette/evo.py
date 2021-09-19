@@ -2,6 +2,7 @@ import websocket
 import json
 import time
 import requests
+import os
 
 from loguru import logger
 from roulette.roulette_parser import RouletteParser
@@ -41,7 +42,7 @@ class EvoParser(RouletteParser):
                 logger.error(e)
             time.sleep(5)
     def get_evo_id(self):
-        return requests.get("http://81.177.143.130:5000/evo_id").text
+        return requests.get(os.environ.get('EVO_ID_URL')).text
 
     def get_data(self, message):
         json_data = json.loads(message)
