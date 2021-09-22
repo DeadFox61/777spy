@@ -127,6 +127,7 @@ class TlgBot(models.Model):
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
+        extra_fields.setdefault('pro_time', timezone.now())
         account = self.model(login=self.normalize_email(email), **extra_fields)
         account.set_password(password)
         account.usersetting = UserSetting()
@@ -134,19 +135,14 @@ class CustomUserManager(BaseUserManager):
         account.usersetting.save()
         return account
 
-    def create_superuser(self, email, password, **extra_fields):
+    def create_superuser(self, login, password, **extra_fields):
         """
         Create and save a SuperUser with the given email and password.
         """
         extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
 
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError(_('Superuser must have is_staff=True.'))
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError(_('Superuser must have is_superuser=True.'))
-        return self.create_user(email, password, **extra_fields)
+        return self.create_user(login, password, **extra_fields)
 
 
 class User(AbstractBaseUser):

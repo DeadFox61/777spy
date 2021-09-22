@@ -931,3 +931,49 @@ function menu_quit() {
         }        
     });
 }
+
+// функции редактирования информации в меню
+function  menu_user_info(action, param) {
+    var lang = langs();  
+    if (action == 2){
+        if (param == 1) {text = lang['js']['menu_user_info']['1']+'?';}//Удалить номер телефона
+        else if (param == 2) {text = lang['js']['menu_user_info']['2']+'?';} //Удалить телеграм
+        if (confirm(text)) {
+            $('#menu_user_info_'+param).text('');
+            $.ajax ({ 
+                url: "ajax", 
+                type: "POST",
+                data: ({csrfmiddlewaretoken: window.CSRF_TOKEN, type: 'menu_user_info', action: action, param: param}),         
+                dataType: "html",               
+                success: function (data) {             
+                }        
+            });
+        }
+    } else if (action == 1){ 
+        $('.menu_user_info_input').detach();
+        $('#menu_user_info_'+param).parent().after('<div class="cont cont_111 cont_hor cont_nowrap menu_user_info_input"><input type="text" id="menu_user_info_input_'+param+'"  class="line_input max" value=""><div class="menu_ico_button"  onclick="menu_user_info_save('+param+')"><i class="fa fa-floppy-o  menu_user_info_save"></i></div><i class="fa fa-times menu_ico_button bg_red" onclick="menu_user_info_cancel('+param+')"></i></div>');
+    }
+}
+ 
+function menu_user_info_cancel(param){
+    $('.menu_user_info_input').detach();
+}
+function menu_user_info_save(param){
+    var lang = langs();  
+    $('.menu_user_info_save').removeClass('fa-floppy-o').addClass('fa-spinner fa-pulse fa-fw');
+    val = $('#menu_user_info_input_'+param).val();
+    $.ajax ({ 
+        url: "ajax", 
+        type: "POST",
+        data: ({csrfmiddlewaretoken: window.CSRF_TOKEN, type: 'menu_user_info_save', val: val, param: param}),         
+        dataType: "html",               
+        success: function (data) {  
+            $('.menu_user_info_input').detach();  
+            if (data == lang['ajax']['menu_user_info_save']['1']+'!'){
+                alert(data);
+            } else {
+                $('#menu_user_info_'+param).text(data);
+            }     
+        }        
+    });    
+}
