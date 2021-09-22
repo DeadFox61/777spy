@@ -15,7 +15,6 @@ postgres/pgdata
 parsing/sess_id.txt
 dump.sql
 nginx/certbot/
-init_data/
 
 # logs
 logs/
