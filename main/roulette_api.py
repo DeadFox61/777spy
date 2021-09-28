@@ -10,7 +10,7 @@ def get_stats(user):
     rules = Rule.objects.filter(user=user)
     rules_data = []
     for rule in rules:
-        rules_data.append({"id": rule.id, "color": rule.color, "rule_type": rule.rule_type, "is_in_order": rule.is_in_row, "count": rule.how_many_in_row})
+        rules_data.append({"id": rule.id, "color": rule.color, "rule_type": rule.rule_type, "is_in_order": rule.is_in_row, "count": rule.how_many_in_row, "max_count": rule.max_count})
     for roulette in roulettes:
         if roulette in selected_rouls:
             roul_data.append(

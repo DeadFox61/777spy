@@ -70,7 +70,7 @@ function write_if_not_writen_bacc(tag, stat_value, rules = false, stat_type = fa
 }
 
 
-function write_if_not_writen(tag, stat_value, rules, stat_type, stat_is_in_order){
+function write_if_not_writen(tag, stat_value, rules, stat_type, stat_is_in_order, is_max = false){
     if (stat_value  !== $(tag).text()) {
         $(tag).text(stat_value);
 
@@ -80,7 +80,7 @@ function write_if_not_writen(tag, stat_value, rules, stat_type, stat_is_in_order
         rule = rules[i];
         
 
-        if ((rule.rule_type == stat_type) && (rule.is_in_order == stat_is_in_order) && (stat_value >= rule.count)){
+        if ((rule.rule_type == stat_type) && (rule.is_in_order == stat_is_in_order) && (stat_value >= rule.count) && ((!is_max) || (stat_value <= rule.max_count))){
             if (rule['color'] == 1) {p_color = 'green';}
             else if (rule['color'] == 2) {p_color = 'yellow';}
             else if (rule['color'] == 3) {p_color = 'red';}
@@ -273,7 +273,7 @@ function update_stats(){
                     write_if_not_writen('#row_no_'+stat.roul_id+'_'+gg,stat.stats.number.data[g].inverse,rules_data,10,false);
                 }
                 if(stat.ind_stats)
-                    write_if_not_writen('#row_no_'+stat.roul_id+'_fav',stat.ind_stats.fav_num,rules_data,101,true);  
+                    write_if_not_writen('#row_no_'+stat.roul_id+'_fav',stat.ind_stats.fav_num,rules_data,101,true, true);  
                 
             }
             line_color();
