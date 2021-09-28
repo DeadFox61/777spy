@@ -109,10 +109,14 @@ class TlgBot(models.Model):
     name = models.CharField(max_length=20)
 
     def send_msg(self, user, msg):
+        if not user.tlg_id:
+            return -1
         bot = telebot.TeleBot(self.tg_token, threaded=False)
         return bot.send_message(user.tlg_id, msg)
 
     def edit_msg(self, user, msg, msg_id):
+        if not user.tlg_id:
+            return -1
         bot = telebot.TeleBot(self.tg_token, threaded=False)
         try:
             return bot.edit_message_text(msg, user.tlg_id, msg_id)
@@ -277,18 +281,29 @@ class Rule(models.Model):
     is_in_row = models.BooleanField()
     rule_type = models.IntegerField()
     how_many_in_row = models.IntegerField()
+    max_count = models.IntegerField(default=9999)
     color = models.IntegerField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     is_tg_on = models.BooleanField(default=False)
+
+    def get_category(self):
+        if self.rule_type > 100:
+            return 1
+        else:
+            return 0
 
     def get_text_info(self, lg="ru"):
         lang = langs.en if lg == "en" else langs.ru
         name = self.name
 
-        if self.is_in_row:
-            is_in_row = lang["func"]["menu"]["2"]  # выпало
+        category = self.get_category()
+        if category == 1:
+            category = "Другое"
         else:
-            is_in_row = lang["func"]["menu"]["1"]  # не выпало
+            if self.is_in_row:
+                category = lang["func"]["menu"]["2"]  # выпало
+            else:
+                category = lang["func"]["menu"]["1"]  # не выпало
 
         if (self.rule_type == 1):
             rule_type = 'Red/Black'
@@ -312,6 +327,8 @@ class Rule(models.Model):
             rule_type = lang["func"]["menu"]["12"]  # число
         elif (self.rule_type == 11):
             rule_type = "Череда стритов по 3"
+        elif (self.rule_type == 101):
+            rule_type = "fav"
 
         how_many_in_row = self.how_many_in_row
 
@@ -323,7 +340,7 @@ class Rule(models.Model):
             color = "red"  # красный
         return {
             "name": name,
-            "is_in_row": is_in_row,
+            "category": category,
             "rule_type": rule_type,
             "how_many_in_row": how_many_in_row,
             "color": color
@@ -403,7 +420,9 @@ class TlgMsgBacc(models.Model):
             )
             # break
             self.msg_id = msg.id
-            # print(msg.id)
+            if msg == -1:
+                self.delete()
+                return
         except Exception as e:
             # pass
             print(e)
@@ -469,17 +488,23 @@ class TlgMsg(models.Model):
 
     def send_msg(self):
         ordr_text = "выпало подряд" if self.is_in_order else "не выпало подряд"
-        # while True:
+        category = self.rule.get_category()
         try:
-            msg = self.user.get_bot().send_msg(
-                self.user,
-                f"На {self.roul_name} {ordr_text} {self.rule_name} в количестве {self.count}"
-            )
-            # break
+            if category == 0:
+                msg = self.user.get_bot().send_msg(
+                    self.user,
+                    f"На {self.roul_name} {ordr_text} {self.rule_name} в количестве {self.count}"
+                )
+            elif category == 1:
+                msg = self.user.get_bot().send_msg(
+                    self.user,
+                    f"На {self.roul_name} значение {self.rule_name} равно {self.count}"
+                )
+            if msg == -1:
+                self.delete()
+                return
             self.msg_id = msg.id
-            # print(msg.id)
         except Exception as e:
-            # pass
             print(e)
         self.is_sended = True
         self.save()
@@ -488,30 +513,52 @@ class TlgMsg(models.Model):
 
     def stop_msg(self):
         ordr_text = "выпало подряд" if self.is_in_order else "не выпало подряд"
+        category = self.rule.get_category()
         try:
-            self.user.get_bot().edit_msg(
-                self.user,
-                f"На {self.roul_name} {ordr_text} {self.rule_name} в количестве {self.count} 🚫",
-                self.msg_id
-            )
+            if category == 0:
+                self.user.get_bot().edit_msg(
+                    self.user,
+                    f"На {self.roul_name} {ordr_text} {self.rule_name} в количестве {self.count} 🚫",
+                    self.msg_id
+                )
+            elif category == 1:
+                self.user.get_bot().edit_msg(
+                    self.user,
+                    f"На {self.roul_name} значение {self.rule_name} равно {self.count} 🚫"
+                )
         except Exception as e:
             print(e)
         self.delete()
 
     def up_msg(self, new_count):
         ordr_text = "выпало подряд" if self.is_in_order else "не выпало подряд"
+        category = self.rule.get_category()
         if self.count < new_count:
-            self.user.get_bot().edit_msg(
-                self.user,
-                f"На {self.roul_name} {ordr_text} {self.rule_name} в количестве {new_count} ⏫",
-                self.msg_id
-            )
+            icon = "⏫"
+        elif self.count > new_count:
+            icon = "⏬"
+        else:
+            return
+        try:
+            if category == 0:
+                self.user.get_bot().edit_msg(
+                    self.user,
+                    f"На {self.roul_name} {ordr_text} {self.rule_name} в количестве {new_count} {icon}",
+                    self.msg_id
+                )
+            elif category == 1:
+                self.user.get_bot().edit_msg(
+                    self.user,
+                    f"На {self.roul_name} значение {self.rule_name} равно {new_count} {icon}",
+                    self.msg_id
+                )
+        except Exception as e:
+            print(e)
         self.count = new_count
         self.save()
 
     def __str__(self):
-        txt = "stop_msg" if self.is_stoped else "send_msg"
-        return f"{self.user.login} {txt}"
+        return f"{self.user.login} {self.rule_name}"
 
 class ParseData(models.Model):
     version = models.IntegerField()

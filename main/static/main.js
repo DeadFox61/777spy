@@ -273,7 +273,7 @@ function update_stats(){
                     write_if_not_writen('#row_no_'+stat.roul_id+'_'+gg,stat.stats.number.data[g].inverse,rules_data,10,false);
                 }
                 if(stat.ind_stats)
-                    write_if_not_writen('#row_no_'+stat.roul_id+'_fav',stat.ind_stats.fav_num,rules_data,10,false);  
+                    write_if_not_writen('#row_no_'+stat.roul_id+'_fav',stat.ind_stats.fav_num,rules_data,101,true);  
                 
             }
             line_color();
@@ -531,12 +531,13 @@ function menu_add_save() {
     col = $('#menu_add_col').val();
     color = $('#menu_add_color').val();
     count = $('#menu_add_count').val();
+    max_count = $('#menu_add_count_max').val();
     if (name && count) { 
         
         $.ajax ({ 
             url: "add_rule", 
             type: "POST",         
-            data: ({csrfmiddlewaretoken: window.CSRF_TOKEN, type: 'menu_save_rules', name: name, tables: tables, col: col, color: color, count: count}),         
+            data: ({csrfmiddlewaretoken: window.CSRF_TOKEN, type: 'menu_save_rules', name: name, tables: tables, col: col, color: color, count: count, max_count:max_count}),         
             dataType: "json",               
             success: function (data) {
                 if (data.status == "err"){
@@ -546,13 +547,16 @@ function menu_add_save() {
                     $('#menu_add_rules').hide('300');
                     $('#menu_add_name').val('');
                     $('#menu_add_count').val('');
+                    $('#menu_add_count_max').val('');
                     
                     del_id = $('#menu_edit_id').text();
                     if (del_id){
                         menu_add_delete(del_id,false)
                     }
+                    else{
+                        menu_rules_show();
+                    }
                     $('#menu_edit_id').text('');
-                    menu_rules_show();
                 }
             }        
         });
@@ -629,8 +633,8 @@ function menu_rules_show() {
                             <i class="fa fa-times " onclick="menu_add_delete(`+rule.id+`)"></i>
                         </div>
                         <div class="cont cont_111 cont_nowrap cont_hor menu_rules_line">
-                            <p>`+rule.is_in_row+`</p>
-                            <p>`+rule.how_many_in_row+`</p>
+                            <p>`+rule.category+`</p>
+                            <p>`+rule.how_many_in_row+rule.max_count+`</p>
                         </div>
                         <div class="cont cont_111 cont_nowrap cont_hor menu_rules_line">
                             <p>`+rule.rule_type+`</p>
@@ -755,8 +759,7 @@ function menu_add_delete(id,is_refresh = true) {
         data: ({csrfmiddlewaretoken: window.CSRF_TOKEN, type: 'menu_rules_delete', id: id}),         
         dataType: "json",               
         success: function (data) {
-            if(is_refresh)
-                menu_rules_show();
+            menu_rules_show();
         }        
     });
     
@@ -789,12 +792,20 @@ function menu_add_edit(id) {
             $('#menu_edit_id').text(rule['id']); 
             $('#menu_add_name').val(rule['name']);
             $('#menu_add_count').val(rule['how_many_in_row']);
-            if(rule["is_in_row"]){table = 1}
-            else{table = 0}
+            $('#menu_add_count_max').val(rule['max_count']);
+            if(rule["category"] == 1){
+                table = 2;
+            }
+            else{ 
+                if(rule["is_in_row"])
+                    {table = 1}
+                else{table = 0}
+            }
             $('#menu_add_tables option[value="'+table+'"]').prop('selected', true);
             $('#menu_add_col option[value="'+rule['rule_type']+'"]').prop('selected', true);
             $('#menu_add_color option[value="'+rule['color']+'"]').prop('selected', true);
             $('#menu_add_rules').slideDown('500');
+            menu_check_select();
         }        
     });
 }
@@ -876,25 +887,51 @@ function menu_add() {
 }
 function menu_check_select() {
     col = $('#menu_add_tables').val();
-    if (col == 1) {
-        /*$('#menu_add_col option[value="6"]').prop('disabled', true);*/
-        $('#menu_add_col option[value="6"]').hide();
-        $('#menu_add_col option[value="7"]').hide();
-        $('#menu_add_col option[value="8"]').hide();
-        $('#menu_add_col option[value="9"]').hide();
-        $('#menu_add_col option[value="10"]').hide();
-        $('#menu_add_col option[value="11"]').hide();
-        col2 = $('#menu_add_col').val();
-        if (col2 >= 6) {$('#menu_add_col option[value="1"]').prop('selected', true);}
-    } else {
-        /*$('#menu_add_col option[value="6"]').prop('disabled', false);*/
+    if (col == 0) {
+        $('#menu_add_count_max').hide();
+        $('#menu_add_col option[value="1"]').show();
+        $('#menu_add_col option[value="2"]').show();
+        $('#menu_add_col option[value="3"]').show();
+        $('#menu_add_col option[value="4"]').show();
+        $('#menu_add_col option[value="5"]').show();;
         $('#menu_add_col option[value="6"]').show();
         $('#menu_add_col option[value="7"]').show();
         $('#menu_add_col option[value="8"]').show();
         $('#menu_add_col option[value="9"]').show();
         $('#menu_add_col option[value="10"]').show();
         $('#menu_add_col option[value="11"]').show();
-
+        $('#menu_add_col option[value="101"]').hide();
+        $('#menu_add_col option[value="1"]').prop('selected', true);
+    } else if (col == 1) {
+        $('#menu_add_count_max').hide();
+        $('#menu_add_col option[value="1"]').show();
+        $('#menu_add_col option[value="2"]').show();
+        $('#menu_add_col option[value="3"]').show();
+        $('#menu_add_col option[value="4"]').show();
+        $('#menu_add_col option[value="5"]').show();;
+        $('#menu_add_col option[value="6"]').hide();
+        $('#menu_add_col option[value="7"]').hide();
+        $('#menu_add_col option[value="8"]').hide();
+        $('#menu_add_col option[value="9"]').hide();
+        $('#menu_add_col option[value="10"]').hide();
+        $('#menu_add_col option[value="11"]').hide();
+        $('#menu_add_col option[value="101"]').hide();
+        $('#menu_add_col option[value="1"]').prop('selected', true);
+    } else if (col == 2) {
+        $('#menu_add_count_max').show();
+        $('#menu_add_col option[value="1"]').hide();
+        $('#menu_add_col option[value="2"]').hide();
+        $('#menu_add_col option[value="3"]').hide();
+        $('#menu_add_col option[value="4"]').hide();
+        $('#menu_add_col option[value="5"]').hide();;
+        $('#menu_add_col option[value="6"]').hide();
+        $('#menu_add_col option[value="7"]').hide();
+        $('#menu_add_col option[value="8"]').hide();
+        $('#menu_add_col option[value="9"]').hide();
+        $('#menu_add_col option[value="10"]').hide();
+        $('#menu_add_col option[value="11"]').hide();
+        $('#menu_add_col option[value="101"]').show();
+        $('#menu_add_col option[value="101"]').prop('selected', true);
     }
 }
 

@@ -121,7 +121,7 @@ def get_rules():
     cursor = get_cursor(conn)
     
     cursor.execute(f"""
-SELECT r.id as rule_id, r.is_in_row as is_in_order, r.rule_type, r.how_many_in_row as count, u.id as user_id, s.is_zero, s.id as st_id
+SELECT r.id as rule_id, r.is_in_row as is_in_order, r.rule_type, r.how_many_in_row as count, r.max_count, u.id as user_id, s.is_zero, s.id as st_id
 FROM main_rule r
     LEFT JOIN main_user u 
         ON r.user_id = u.id

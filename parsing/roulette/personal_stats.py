@@ -72,14 +72,16 @@ class IndUserRoulsStats():
     def save(self):
         db.ind_save_stat(self.user_id, self.to_json())
 
+    def get_stats(self, roul_id):
+        """Возвращает статистику по рулетке roul_id"""
+        return self.data.get(roul_id)
+
 
 class IndRoulStats():
     """Основной класс индивидуальной статистики"""
     def __init__(self, controller):
         self.data = {}
         self.controller = controller
-    def load_data(self):
-        self.data = {}
         users_data = db.get_users_data()
         for user_id in users_data:
             self.data[user_id] = IndUserRoulsStats(user_id, users_data[user_id], self.controller)
@@ -90,10 +92,20 @@ class IndRoulStats():
                 self.data[user_id] = IndUserRoulsStats(user_id, users_data[user_id], self.controller)
             else:
                 self.data[user_id].check_updates(users_data[user_id])
+
+    def reload_roul(self, roul_id):
+        # TODO
+        pass
+
     def add_num(self, roul_id, num):
+        self.check_updates()
         for user_id in self.data:
             self.data[user_id].add_num(roul_id, num)
     def add_nums(self, roul_id, nums):
         self.check_updates()
         for num in nums[::-1]:
             self.add_num(roul_id, num)
+
+    def get_stats(self, user_id, roul_id):
+        """Возвращает статистику игрока user_id по рулетке roul_id"""
+        return self.data[user_id].get_stats(roul_id)

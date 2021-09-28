@@ -1,7 +1,6 @@
 from db import db_calc as db
 import time
 
-from roulette.main_rules import Rules
 from loguru import logger
 
 NUM_RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
@@ -373,28 +372,32 @@ class RoulStats():
     def save(self):
         json_stats = self.to_json()
         db.save_stat(self.roul_id,json_stats)
+
 class RoulsStats():
-    def __init__(self):
+    def __init__(self, controller):
         self.rouls = {}
-        self.rules = Rules()
-    def init_roul(self, roul_id, name, nums):
-        if roul_id not in self.rouls:
-            roul = RoulStats(roul_id = roul_id, name = name)
-            roul.add_nums(nums)
-            self.rouls[roul_id] = roul
-    def reload_roul(self, roul_id, name, nums):
-        if roul_id in self.rouls:
-            self.rouls[roul_id] = RoulStats(roul_id = roul_id, name = name)
-            self.rouls[roul_id].add_nums(nums)
-            self.rouls[roul_id].save()
-    def init_rouls(self, roul_data):
-        for roul_id in roul_data:
-            self.init_roul(roul_id,roul_data[roul_id]["name"],roul_data[roul_id]["nums"])
-    def add(self, roul_id, num):
+        self.controller = controller
+
+        for roul_id in controller.temp:
+            self.reload_roul(roul_id)
+
+    def reload_roul(self, roul_id):
+        self.rouls[roul_id] = RoulStats(roul_id = roul_id, name = self.controller.temp[roul_id]['name'])
+        self.rouls[roul_id].add_nums(self.controller.temp[roul_id]['nums'])
+        self.rouls[roul_id].save()
+
+            
+    def add_num(self, roul_id, num):
         try:
             self.rouls[roul_id].add_num(num)
             self.rouls[roul_id].save()
-            self.rules.update_from_db()
-            self.rules.proc_roul(roul_id,self.rouls[roul_id])
         except Exception as e:
             logger.error(e)
+
+    def check_updates(self):
+        # TODO
+        pass
+
+    def get_stats(self, roul_id):
+        """возвращает статистику рулетки roul_id"""
+        return self.rouls[roul_id]

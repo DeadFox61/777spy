@@ -3,8 +3,7 @@ from loguru import logger
 import time
 
 from db import db_roulette as db
-from roulette.main_stats import RoulsStats
-from roulette.personal_stats import IndRoulStats
+from roulette.stats import Stats
 
 class NoMatches(Exception):
     pass
@@ -20,11 +19,10 @@ class RoulettesManager():
     MIN_NUM_COUNT = 6
     def __init__(self):
         # В temp хранятся последние 500 чисел
-        self.temp = {}
+        self.temp = db.get_init_data()
         self.lock = threading.Lock()
-        self.stats = RoulsStats()
-        self.ind_stats = IndRoulStats(self)
-        self.load_data()
+        self.stats = Stats(self)
+
     def get_new(self, old, new):
         """Сравнивет и возвращает список новых чисел. Возбуждает NoMatches, если совпадений в old нет"""
         off = self.MIN_NUM_COUNT
@@ -37,22 +35,13 @@ class RoulettesManager():
         logger.error(f'{new} не найден в {old}')
         raise NoMatches("Нет совпадений в old")
 
-    def load_data(self):
-        """Загружает данные, хранящиеся в бд"""
-        logger.info("Loading data from db..")
-        self.temp = db.get_init_data()
-        self.stats.init_rouls(self.temp)
-        self.ind_stats.load_data()
-        logger.info("Data loaded")
-
+    @logger.catch
     def add_numbers(self, roul_id, nums):
         """Добавляет числа в рулетку"""
         db.add_numbers(roul_id, nums)
-        self.temp[roul_id]['nums'] = nums+self.temp[roul_id]['nums']
-        for num in nums[::-1]:
-            self.stats.add(roul_id, num)
+        self.temp[roul_id]['nums'] = (nums+self.temp[roul_id]['nums'])[:500]
         try:
-            self.ind_stats.add_nums(roul_id, nums)
+            self.stats.add_nums(roul_id, nums)
         except Exception as e:
             logger.error(e)
         logger.info(f'В ({roul_id}){self.temp[roul_id]["name"]} добавлены {nums}')
@@ -62,14 +51,24 @@ class RoulettesManager():
         db.clear_roul(roul_id)
         db.add_numbers(roul_id, nums)
         self.temp[roul_id]['nums'] = nums
-        self.stats.reload_roul(roul_id, self.temp[roul_id]["name"], nums)
+        self.stats.reload_roul(roul_id)
         logger.info(f'({roul_id}){self.temp[roul_id]["name"]} очищена')
+
     def get_nums(self, roul_id):
         """Возвращает числа рулетки roul_id"""
         if roul_id in self.temp:
             return self.temp[roul_id]['nums']
         else:
             raise NoSuchRoulette(f"Рулетка с id {roul_id} не инициализирована")
+
+    def get_full_name(self, roul_id):
+        """Возвращает полное имя рулетки(с провайдером)"""
+        if roul_id>29:
+            prod = "Ezugi"
+        else:
+            prod = "EG"
+        return f"{prod} {self.temp[roul_id]['name']}"
+
     def proc_numbers(self, roul_id, nums):
         """Обрабатывает числа nums рулетки roul_id. Парсеры вызывают эту функцию, когда получают числа"""
         with self.lock:
@@ -84,6 +83,7 @@ class RoulettesManager():
                 pass
             except NoSuchRoulette as e:
                 logger.error(e)
+
     def add_parser(self, parser):
         parse_thread = threading.Thread(target=parser.start_parsing, args=(self.proc_numbers,))
         parse_thread.start()

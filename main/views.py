@@ -142,8 +142,13 @@ def add_rule(request):
     is_in_row = bool(int(request.POST['tables']))
     rule_type = int(request.POST['col'])
     count = int(request.POST['count'])
+    max_count = request.POST.get('max_count')
+    if not max_count:
+        max_count = 9999
+    else:
+        max_count = int(max_count)
     color = int(request.POST['color'])
-    return JsonResponse(roulette_api.add_rule(usr,name,is_in_row,rule_type,count,color))
+    return JsonResponse(roulette_api.add_rule(usr,name,is_in_row,rule_type,count,max_count,color))
 
 def get_rules(request):
     return JsonResponse(roulette_api.get_rules(request.user))

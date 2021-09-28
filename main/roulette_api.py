@@ -83,7 +83,7 @@ def change_zero(usr,zr_name):
     return {"status": "ok"}
 
 
-def add_rule(usr, name, is_in_row, rule_type, count, color):
+def add_rule(usr, name, is_in_row, rule_type, count, max_count, color):
     """Создаёт и добавляет правило в БД"""
     gl_st = GlobalSetting.objects.get(version = 1000)
     if not usr.get_is_pro() and usr.rule_set.count() >= gl_st.free_rules_available:
@@ -93,6 +93,7 @@ def add_rule(usr, name, is_in_row, rule_type, count, color):
         is_in_row=is_in_row,
         rule_type=rule_type,
         how_many_in_row=count,
+        max_count=max_count,
         color=color,
         user=usr
     )
@@ -109,9 +110,10 @@ def get_rules(usr):
             {
                 "id": rule.id,
                 "name": rule_text["name"],
-                "is_in_row": rule_text["is_in_row"],
+                "category": rule_text["category"],
                 "rule_type": rule_text["rule_type"],
                 "how_many_in_row": rule_text["how_many_in_row"],
+                "max_count": "-"+str(rule.max_count) if rule.max_count!=9999 and rule.get_category()!=0 else "",
                 "color": rule_text["color"],
                 "is_tg_on": rule.is_tg_on
             }
@@ -130,8 +132,10 @@ def get_rule(rule_id):
                 "id": rule.id,
                 "name": rule.name,
                 "is_in_row": rule.is_in_row,
+                "category": rule.get_category(),
                 "rule_type": rule.rule_type,
                 "how_many_in_row": rule.how_many_in_row,
+                "max_count": rule.max_count,
                 "color": rule.color
             }
 def change_tg(usr,rule_id,is_on):

@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="cont cont_111 cont_nowrap cont_hor page">
+<div class="cont cont_111 cont_nowrap cont_hor page" >
         <!-- меню -->
        
         <div class="menu">
@@ -123,9 +123,10 @@
                     <select id="menu_add_tables" class="mt_20">
                         <option value="0">{{text.func.menu.1}}</option>
                         <option value="1">{{text.func.menu.2}}</option>
+                        <option value="2">Другое</option>
                     </select>
 
-                    <select id="menu_add_col" class="mt_20">';
+                    <select id="menu_add_col" class="mt_20">
                         <option value="1">Red/Black</option>
                         <option value="2">Even/Odd</option>
                         <option value="3">Low/High</option>
@@ -137,11 +138,14 @@
                         <option value="9">Череда кроме секторов по 3</option>
                         <option value="11">Череда секторов по 3</option>
                         <option value="10">{{text.func.menu.12}}</option>
+                        <option value="101" style="display: none;">fav</option>
                     </select>
 
-                    <input type="text"  id="menu_add_count" value="" placeholder="{{text.menu.rule.3}}" class="menu_panel_input menu_input mt_20">
+                    <input type="text"  id="menu_add_count" value="" placeholder="Как минимум" class="menu_panel_input menu_input mt_20">
 
-                    <select id="menu_add_color" class="mt_20">';
+                    <input type="text"  id="menu_add_count_max" value="" placeholder="Максимум(опционально)" class="menu_panel_input menu_input mt_20" style="display: none;" >
+
+                    <select id="menu_add_color" class="mt_20">
                         <option value="1">{{text.func.menu.13}}</option>
                         <option value="2">{{text.func.menu.14}}</option>
                         <option value="3">{{text.func.menu.15}}</option>
