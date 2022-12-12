@@ -63,3 +63,8 @@ services:
       - local_static:/var/www/local_static/
       - static:/var/www/static/
       - certs:/etc/nginx/certs
+
+volumes:
+  local_static:
+  static:
+  certs:
