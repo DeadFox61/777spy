@@ -18,3 +18,7 @@ nginx/certbot/
 
 # logs
 logs/
+
+### JetBrains template
+.idea
+.vscode

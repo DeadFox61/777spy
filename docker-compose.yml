@@ -17,6 +17,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./:/usr/src/app
+      - static:/app/static/
     environment:
       - URL
       - POSTGRES_USER
@@ -46,3 +47,19 @@ services:
       - EVO_ID_URL
     depends_on:
       - postgresdb
+
+  nginx:
+    build:
+      context: ./nginx
+    depends_on:
+      - web
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - TLS_MODE
+    volumes:
+      - local_static:/var/www/local_static/
+      - static:/var/www/static/
+      - certs:/etc/nginx/certs
