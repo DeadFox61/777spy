@@ -17,7 +17,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./:/usr/src/app
-      - static:/app/static/
+      - static:/usr/src/app/static/
     environment:
       - URL
       - POSTGRES_USER
